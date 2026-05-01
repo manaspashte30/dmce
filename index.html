@@ -1,764 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>C · Data Structures Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <link href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.min.css" rel="stylesheet"/>
-
 <style>
-  .copy-btn, .run-btn {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-right: 8px;
-  transition: 0.2s;
-}
-
-.copy-btn:hover, .run-btn:hover {
-  transform: scale(1.08);
-}
-
-/* Confetti */
-.confetti {
-  position: fixed;
-  width: 8px;
-  height: 8px;
-  top: 0;
-  opacity: 0.9;
-  animation: fall 1s linear forwards;
-  z-index: 9999;
-}
-
-@keyframes fall {
-  to {
-    transform: translateY(100vh) rotate(360deg);
-    opacity: 0;
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #16161f;
+    --border: #1e1e2e;
+    --accent: #f0c040;
+    --accent2: #5fe0b0;
+    --accent3: #ff6b6b;
+    --text: #e8e8f0;
+    --muted: #6b6b88;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Syne', sans-serif;
   }
-}
-.code-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, #673AB7, #512DA8);
-  color: white;
-  padding: 14px 18px;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
 
-.copy-btn, .run-btn {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-right: 8px;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.copy-btn {
-  background: #4CAF50;
-  color: white;
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-.run-btn {
-  background: #FF5722;
-  color: white;
-}
+  /* ─── GRID NOISE BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(240,192,64,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,192,64,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-.code-container {
-  margin-bottom: 40px;
-}
+  /* ─── GLOW BLOBS ─── */
+  .glow-blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-blob.a { width: 500px; height: 500px; background: var(--accent); top: -100px; left: -100px; }
+  .glow-blob.b { width: 400px; height: 400px; background: var(--accent2); bottom: 100px; right: -80px; }
+  .glow-blob.c { width: 300px; height: 300px; background: var(--accent3); top: 50%; left: 50%; transform: translate(-50%,-50%); }
 
-html {
-  scroll-behavior: smooth;
-}
+  /* ─── HEADER ─── */
+  header {
+    position: relative; z-index: 10;
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(240,192,64,.1);
+    border: 1px solid rgba(240,192,64,.25);
+    border-radius: 100px;
+    padding: 4px 14px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--accent);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    width: fit-content;
+    margin-bottom: 12px;
+  }
+  .badge::before { content: '●'; font-size: 8px; animation: blink 1.4s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    background: linear-gradient(120deg, #fff 30%, var(--accent) 70%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: .05em;
+  }
+
+  /* ─── NAV PILLS ─── */
+  .nav-strip {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-strip::-webkit-scrollbar { display: none; }
+
+  .nav-pill {
+    flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all .2s;
+    cursor: pointer;
+  }
+  .nav-pill:hover, .nav-pill.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(240,192,64,.07);
+  }
+  .nav-pill .icon { font-size: 14px; }
+  .nav-pill .num {
+    background: var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 9px;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  main {
+    position: relative; z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ─── CODE CARD ─── */
+  .code-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color .25s, transform .25s, box-shadow .25s;
+  }
+  .code-card:hover {
+    border-color: rgba(240,192,64,.3);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(240,192,64,.1);
+  }
+
+  /* ─── CARD HEADER ─── */
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .num-badge {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(240,192,64,.12);
+    border: 1px solid rgba(240,192,64,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .card-title-block { flex: 1; }
+  .topic-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .tag-array { background: rgba(95,224,176,.12); color: var(--accent2); border: 1px solid rgba(95,224,176,.2); }
+  .tag-recursion { background: rgba(255,107,107,.12); color: var(--accent3); border: 1px solid rgba(255,107,107,.2); }
+  .tag-stack { background: rgba(161,107,255,.12); color: #a16bff; border: 1px solid rgba(161,107,255,.2); }
+  .tag-queue { background: rgba(240,192,64,.12); color: var(--accent); border: 1px solid rgba(240,192,64,.2); }
+
+  .card-title {
+    font-family: var(--sans);
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .card-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+
+  .btn {
+    display: flex; align-items: center; gap: 6px;
+    border: none; border-radius: 8px;
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .18s;
+    letter-spacing: .04em;
+  }
+  .btn-copy {
+    background: rgba(95,224,176,.12);
+    color: var(--accent2);
+    border: 1px solid rgba(95,224,176,.2);
+  }
+  .btn-copy:hover { background: rgba(95,224,176,.22); transform: scale(1.04); }
+  .btn-copy.copied { background: rgba(95,224,176,.25); color: #fff; }
+
+  .btn-run {
+    background: rgba(240,192,64,.12);
+    color: var(--accent);
+    border: 1px solid rgba(240,192,64,.2);
+  }
+  .btn-run:hover { background: rgba(240,192,64,.22); transform: scale(1.04); }
+
+  /* ─── CODE AREA ─── */
+  .code-wrap {
+    position: relative;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .45s cubic-bezier(.4,0,.2,1);
+  }
+  .code-wrap.open { max-height: 2000px; }
+
+  pre[class*="language-"] {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: #0d0d14 !important;
+    font-family: var(--mono) !important;
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+    padding: 24px !important;
+    overflow-x: auto;
+  }
+
+  /* ─── TOGGLE ROW ─── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 24px;
+    cursor: pointer;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    transition: background .2s;
+    user-select: none;
+  }
+  .toggle-row:hover { background: rgba(240,192,64,.04); }
+
+  .toggle-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    flex: 1;
+  }
+  .toggle-arrow {
+    font-size: 12px;
+    color: var(--muted);
+    transition: transform .3s;
+  }
+  .toggle-row.open .toggle-arrow { transform: rotate(180deg); }
+
+  /* ─── CONCEPT CHIP ─── */
+  .concept-bar {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,.2);
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--border);
+    border-radius: 4px;
+    padding: 3px 9px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .05em;
+  }
+
+  /* ─── CONFETTI ─── */
+  .confetti-piece {
+    position: fixed; width: 8px; height: 8px;
+    top: -10px; border-radius: 2px;
+    pointer-events: none; z-index: 9999;
+    animation: confetti-fall 1.2s ease-in forwards;
+  }
+  @keyframes confetti-fall {
+    to { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media(max-width:640px) {
+    header { padding: 40px 20px 30px; }
+    .nav-strip { padding: 12px 20px; }
+    main { padding: 32px 16px; }
+    .card-head { flex-wrap: wrap; }
+    .card-actions { width: 100%; justify-content: flex-end; }
+  }
+
+  /* ─── SCROLL ANIMATION ─── */
+  .code-card { opacity: 0; transform: translateY(24px); }
+  .code-card.visible { animation: card-in .5s cubic-bezier(.2,.8,.2,1) forwards; }
+  @keyframes card-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
-<div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
-  <a href="#code1"><button class="copy-btn">➕ Insert</button></a>
-  <a href="#code2"><button class="copy-btn">➖ Delete</button></a>
-  <a href="#code3"><button class="copy-btn">🧮 Factorial</button></a>
-  <a href="#code4"><button class="copy-btn">📥 Push</button></a>
-  <a href="#code5"><button class="copy-btn">📤 Pop</button></a>
-  <a href="#code6"><button class="copy-btn">➡️ Enqueue</button></a>
-  <a href="#code7"><button class="copy-btn">⬅️ Dequeue</button></a>
-  <a href="#code8"><button class="copy-btn">🔄 C-Queue Enq</button></a>
-  <a href="#code9"><button class="copy-btn">🔁 C-Queue Deq</button></a>
-</div>
-<div class="code-container" id="code1">
+</head>
+<body>
 
-<div class="code-header">
-💻 1. Implementation of insertion at a specific position in an array using function and display it.
-</div>
+<div class="glow-blob a"></div>
+<div class="glow-blob b"></div>
+<div class="glow-blob c"></div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
+<!-- HEADER -->
+<header>
+  <div class="badge">C Programming · Lab Manual</div>
+  <h1>Data Structures<br/>in C</h1>
+  <p class="subtitle">// 9 programs · arrays · stacks · queues · recursion</p>
+</header>
 
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- NAV -->
+<nav class="nav-strip">
+  <a class="nav-pill" href="#card1"><span class="icon">➕</span> Insert <span class="num">01</span></a>
+  <a class="nav-pill" href="#card2"><span class="icon">➖</span> Delete <span class="num">02</span></a>
+  <a class="nav-pill" href="#card3"><span class="icon">🧮</span> Factorial <span class="num">03</span></a>
+  <a class="nav-pill" href="#card4"><span class="icon">📥</span> Push <span class="num">04</span></a>
+  <a class="nav-pill" href="#card5"><span class="icon">📤</span> Pop <span class="num">05</span></a>
+  <a class="nav-pill" href="#card6"><span class="icon">➡️</span> Enqueue <span class="num">06</span></a>
+  <a class="nav-pill" href="#card7"><span class="icon">⬅️</span> Dequeue <span class="num">07</span></a>
+  <a class="nav-pill" href="#card8"><span class="icon">🔄</span> C-Enqueue <span class="num">08</span></a>
+  <a class="nav-pill" href="#card9"><span class="icon">🔁</span> C-Dequeue <span class="num">09</span></a>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+<!-- CARD 1 -->
+<div class="code-card" id="card1">
+  <div class="card-head">
+    <div class="num-badge">01</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-array">Array</div>
+      <div class="card-title">Insertion at a specific position in an array using a function</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">for-loop shifting</span>
+    <span class="chip">pointer to size</span>
+    <span class="chip">bounds check</span>
+    <span class="chip">while(1) menu</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 
 #define MAX_SIZE 100
 
 void insertAtPosition(int arr[], int *size, int element, int position)
 {
-    if (*size >= MAX_SIZE)
-    {
-        printf("Error: Array is full.\n");
-        return;
-    }
-
-    if (position < 1 || position > *size + 1)
-    {
-        printf("Error: Invalid position.\n");
-        return;
-    }
+    if (*size >= MAX_SIZE) { printf("Error: Array is full.\n"); return; }
+    if (position < 1 || position > *size + 1) { printf("Error: Invalid position.\n"); return; }
 
     for (int i = *size; i >= position; i--)
-    {
         arr[i] = arr[i - 1];
-    }
 
     arr[position - 1] = element;
     (*size)++;
-
     printf("Inserted %d at position %d.\n", element, position);
 }
 
 void displayArray(int arr[], int size)
 {
-    if (size == 0)
-    {
-        printf("Array is empty.\n");
-        return;
-    }
-
+    if (size == 0) { printf("Array is empty.\n"); return; }
     printf("Array elements: ");
-    for (int i = 0; i < size; i++)
-    {
-        printf("%d ", arr[i]);
-    }
+    for (int i = 0; i < size; i++) printf("%d ", arr[i]);
     printf("\n");
 }
 
 int main()
 {
-    int arr[MAX_SIZE];
-    int size = 0;
-    int choice, element, position;
-
+    int arr[MAX_SIZE], size = 0, choice, element, position;
     while (1)
     {
-        printf("\nMenu:\n");
-        printf("1. Insert element\n");
-        printf("2. Display array\n");
-        printf("3. Exit\n");
-        printf("Enter your choice: ");
-
-        if (scanf("%d", &choice) != 1)
-        {
-            printf("Invalid input. Exiting.\n");
-            return 0;
-        }
-
+        printf("\nMenu:\n1. Insert element\n2. Display array\n3. Exit\nEnter your choice: ");
+        if (scanf("%d", &choice) != 1) { printf("Invalid input.\n"); return 0; }
         switch (choice)
         {
-        case 1:
-            printf("Enter element: ");
-            scanf("%d", &element);
-
-            printf("Enter position (1 to %d): ", size + 1);
-            scanf("%d", &position);
-
-            insertAtPosition(arr, &size, element, position);
-            break;
-
-        case 2:
-            displayArray(arr, size);
-            break;
-
-        case 3:
-            printf("Exiting program.\n");
-            return 0;
-
-        default:
-            printf("Invalid choice.\n");
+            case 1:
+                printf("Enter element: "); scanf("%d", &element);
+                printf("Enter position (1 to %d): ", size + 1); scanf("%d", &position);
+                insertAtPosition(arr, &size, element, position);
+                break;
+            case 2: displayArray(arr, size); break;
+            case 3: printf("Exiting.\n"); return 0;
+            default: printf("Invalid choice.\n");
         }
     }
-}
-</code></pre>
-
-</div>
-<div class="code-container" id="code2">
-
-<div class="code-header">
-💻 2. Implementation of deletion at a specific position in an array using a function and display it.
+}</code></pre>
+  </div>
 </div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
-
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- CARD 2 -->
+<div class="code-card" id="card2">
+  <div class="card-head">
+    <div class="num-badge">02</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-array">Array</div>
+      <div class="card-title">Deletion at a specific position in an array using a function</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">left-shift elements</span>
+    <span class="chip">size decrement</span>
+    <span class="chip">pre-filled array</span>
+    <span class="chip">position validation</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 
 #define MAX_SIZE 10
 
 void deleteAtPosition(int arr[], int *size, int position)
 {
-    if (*size == 0)
-    {
-        printf("Error: Array is empty.\n");
-        return;
-    }
-
-    if (position < 1 || position > *size)
-    {
-        printf("Error: Invalid position.\n");
-        return;
-    }
+    if (*size == 0) { printf("Error: Array is empty.\n"); return; }
+    if (position < 1 || position > *size) { printf("Error: Invalid position.\n"); return; }
 
     int deleted = arr[position - 1];
-
     for (int i = position - 1; i < *size - 1; i++)
-    {
         arr[i] = arr[i + 1];
-    }
 
     (*size)--;
-
     printf("Deleted element: %d\n", deleted);
 }
 
 void displayArray(int arr[], int size)
 {
-    if (size == 0)
-    {
-        printf("Array is empty.\n");
-        return;
-    }
-
+    if (size == 0) { printf("Array is empty.\n"); return; }
     printf("Array elements: ");
-    for (int i = 0; i < size; i++)
-    {
-        printf("%d ", arr[i]);
-    }
+    for (int i = 0; i < size; i++) printf("%d ", arr[i]);
     printf("\n");
 }
 
 int main()
 {
     int arr[MAX_SIZE] = {10,20,30,40,50,60,70,80,90,100};
-    int size = 10;
-    int choice, position;
-
+    int size = 10, choice, position;
     while (1)
     {
-        printf("\nMenu:\n");
-        printf("1. Delete element\n");
-        printf("2. Display array\n");
-        printf("3. Exit\n");
-        printf("Enter your choice: ");
-
-        if (scanf("%d", &choice) != 1)
-        {
-            printf("Invalid input. Exiting.\n");
-            return 0;
-        }
-
+        printf("\nMenu:\n1. Delete element\n2. Display array\n3. Exit\nEnter your choice: ");
+        if (scanf("%d", &choice) != 1) { printf("Invalid input.\n"); return 0; }
         switch (choice)
         {
-        case 1:
-            printf("Enter position (1 to %d): ", size);
-            scanf("%d", &position);
-
-            deleteAtPosition(arr, &size, position);
-            break;
-
-        case 2:
-            displayArray(arr, size);
-            break;
-
-        case 3:
-            printf("Exiting program.\n");
-            return 0;
-
-        default:
-            printf("Invalid choice.\n");
+            case 1:
+                printf("Enter position (1 to %d): ", size); scanf("%d", &position);
+                deleteAtPosition(arr, &size, position);
+                break;
+            case 2: displayArray(arr, size); break;
+            case 3: printf("Exiting.\n"); return 0;
+            default: printf("Invalid choice.\n");
         }
     }
-}
-</code></pre>
-
-</div>
-<div class="code-container" id="code3">
-
-<div class="code-header">
-💻 3. Write a program to calculate factorial of any number using recursion.
+}</code></pre>
+  </div>
 </div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
-
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- CARD 3 -->
+<div class="code-card" id="card3">
+  <div class="card-head">
+    <div class="num-badge">03</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-recursion">Recursion</div>
+      <div class="card-title">Factorial of a number using recursion</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">base case n=0,1</span>
+    <span class="chip">recursive call</span>
+    <span class="chip">long long return</span>
+    <span class="chip">negative guard</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 
 long long factorial(int n)
 {
-    if (n < 0)
-    {
-        return -1;  // error case
-    }
-
-    if (n == 0 || n == 1)
-    {
-        return 1;
-    }
-
+    if (n < 0)  return -1;   // error sentinel
+    if (n == 0 || n == 1) return 1;
     return n * factorial(n - 1);
 }
 
 int main()
 {
     int num;
-
     printf("Enter a number: ");
-
-    if (scanf("%d", &num) != 1)
-    {
-        printf("Invalid input.\n");
-        return 0;
-    }
+    if (scanf("%d", &num) != 1) { printf("Invalid input.\n"); return 0; }
 
     long long result = factorial(num);
-
     if (result == -1)
-    {
         printf("Factorial not defined for negative numbers.\n");
-    }
     else
-    {
         printf("Factorial of %d is: %lld\n", num, result);
-    }
 
     return 0;
-}
-</code></pre>
-
-</div>
-<div class="code-container" id="code4">
-
-<div class="code-header">
-💻 4. To implement push and display on a stack using array.
+}</code></pre>
+  </div>
 </div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
-
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- CARD 4 -->
+<div class="code-card" id="card4">
+  <div class="card-head">
+    <div class="num-badge">04</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-stack">Stack</div>
+      <div class="card-title">Push and display on a stack using array</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">global top=-1</span>
+    <span class="chip">isfull() check</span>
+    <span class="chip">top-to-bottom display</span>
+    <span class="chip">SIZE=5</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 #define SIZE 5
 
 int top = -1;
 int STK[SIZE];
 
-int isfull()
-{
-    return (top == SIZE - 1);
-}
-
-int isempty()
-{
-    return (top == -1);
-}
+int isfull()  { return (top == SIZE - 1); }
+int isempty() { return (top == -1); }
 
 void push(int val)
 {
-    if (isfull())
-    {
-        printf("----- Stack is FULL -----\n");
-    }
-    else
-    {
-        top++;
-        STK[top] = val;
-        printf("Pushed %d into stack.\n", val);
-    }
+    if (isfull()) printf("----- Stack is FULL -----\n");
+    else { STK[++top] = val; printf("Pushed %d into stack.\n", val); }
 }
 
 void display()
 {
-    if (isempty())
-    {
-        printf("----- Stack is EMPTY -----\n");
-    }
-    else
-    {
-        printf("Stack contents (top to bottom):\n");
-        for (int i = top; i >= 0; i--)
-        {
-            printf("%d\n", STK[i]);
-        }
-    }
+    if (isempty()) { printf("----- Stack is EMPTY -----\n"); return; }
+    printf("Stack contents (top to bottom):\n");
+    for (int i = top; i >= 0; i--) printf("%d\n", STK[i]);
 }
 
 int main()
 {
     int choice, val;
-
-    do
-    {
-        printf("\n---------------------------------\n");
-        printf("1. Push\n2. Display\n3. Exit\n");
-        printf("---------------------------------\n");
-        printf("Enter your choice: ");
-
-        if (scanf("%d", &choice) != 1)
-        {
-            printf("Invalid input.\n");
-            return 0;
-        }
-
+    do {
+        printf("\n1. Push\n2. Display\n3. Exit\nEnter your choice: ");
+        if (scanf("%d", &choice) != 1) return 0;
         switch (choice)
         {
-        case 1:
-            printf("Enter value: ");
-            scanf("%d", &val);
-            push(val);
-            break;
-
-        case 2:
-            display();
-            break;
-
-        case 3:
-            printf("Exiting program.\n");
-            break;
-
-        default:
-            printf("Invalid choice.\n");
+            case 1: printf("Enter value: "); scanf("%d", &val); push(val); break;
+            case 2: display(); break;
+            case 3: printf("Exiting.\n"); break;
+            default: printf("Invalid choice.\n");
         }
-
     } while (choice != 3);
-
     return 0;
-}
-</code></pre>
-
-</div>
-<div class="code-container" id="code5">
-
-<div class="code-header">
-💻 5. To implement pop and display on a stack using array.
+}</code></pre>
+  </div>
 </div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
-
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- CARD 5 -->
+<div class="code-card" id="card5">
+  <div class="card-head">
+    <div class="num-badge">05</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-stack">Stack</div>
+      <div class="card-title">Pop and display on a stack using array</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">pre-filled stack</span>
+    <span class="chip">top-- on pop</span>
+    <span class="chip">isempty() guard</span>
+    <span class="chip">-1 sentinel return</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 #define SIZE 5
 
 int top = 4;
 int STK[SIZE] = {10, 20, 30, 50, 40};
 
-int isempty()
-{
-    return (top == -1);
-}
+int isempty() { return (top == -1); }
 
 int pop()
 {
-    if (isempty())
-    {
-        printf("----- Stack is EMPTY -----\n");
-        return -1;
-    }
-    else
-    {
-        int val = STK[top];
-        top--;
-        return val;
-    }
+    if (isempty()) { printf("----- Stack is EMPTY -----\n"); return -1; }
+    return STK[top--];
 }
 
 void display()
 {
-    if (isempty())
-    {
-        printf("----- Stack is EMPTY -----\n");
-    }
-    else
-    {
-        printf("Stack contents (top to bottom):\n");
-        for (int i = top; i >= 0; i--)
-        {
-            printf("%d\n", STK[i]);
-        }
-    }
+    if (isempty()) { printf("----- Stack is EMPTY -----\n"); return; }
+    printf("Stack contents (top to bottom):\n");
+    for (int i = top; i >= 0; i--) printf("%d\n", STK[i]);
 }
 
 int main()
 {
     int choice, val;
-
-    do
-    {
-        printf("\n---------------------------------\n");
-        printf("1. Pop\n2. Display\n3. Exit\n");
-        printf("---------------------------------\n");
-        printf("Enter your choice: ");
-
-        if (scanf("%d", &choice) != 1)
-        {
-            printf("Invalid input.\n");
-            return 0;
-        }
-
+    do {
+        printf("\n1. Pop\n2. Display\n3. Exit\nEnter your choice: ");
+        if (scanf("%d", &choice) != 1) return 0;
         switch (choice)
         {
-        case 1:
-            val = pop();
-            if (val != -1)
-                printf("Popped value = %d\n", val);
-            break;
-
-        case 2:
-            display();
-            break;
-
-        case 3:
-            printf("Exiting program.\n");
-            break;
-
-        default:
-            printf("Invalid choice.\n");
+            case 1: val = pop(); if (val != -1) printf("Popped value = %d\n", val); break;
+            case 2: display(); break;
+            case 3: printf("Exiting.\n"); break;
+            default: printf("Invalid choice.\n");
         }
-
     } while (choice != 3);
-
     return 0;
-}
-</code></pre>
-
-</div>
-<div class="code-container" id="code6">
-
-<div class="code-header">
-💻 6. Implement Enqueue using array implementation of Linear Queue
+}</code></pre>
+  </div>
 </div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
-
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- CARD 6 -->
+<div class="code-card" id="card6">
+  <div class="card-head">
+    <div class="num-badge">06</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-queue">Queue</div>
+      <div class="card-title">Enqueue using array implementation of Linear Queue</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">front & rear pointers</span>
+    <span class="chip">rear==SIZE-1 full</span>
+    <span class="chip">front>rear empty</span>
+    <span class="chip">FIFO order</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 #define SIZE 5
 
-int rear = -1;
-int front = 0;
+int rear = -1, front = 0;
 int que[SIZE];
 
-int isquefull()
-{
-    return (rear == SIZE - 1);
-}
-
-int isqueempty()
-{
-    return (front > rear);
-}
+int isquefull()  { return (rear == SIZE - 1); }
+int isqueempty() { return (front > rear); }
 
 void enqueue(int val)
 {
-    if (isquefull())
-    {
-        printf("----- Queue is FULL -----\n");
-    }
-    else
-    {
-        rear++;
-        que[rear] = val;
-        printf("Inserted %d into queue.\n", val);
-    }
+    if (isquefull()) printf("----- Queue is FULL -----\n");
+    else { que[++rear] = val; printf("Inserted %d into queue.\n", val); }
 }
 
 void display()
 {
-    if (isqueempty())
-    {
-        printf("----- Queue is EMPTY -----\n");
-    }
-    else
-    {
-        printf("Queue contents:\n");
-        for (int i = front; i <= rear; i++)
-        {
-            printf("%d\n", que[i]);
-        }
-    }
+    if (isqueempty()) { printf("----- Queue is EMPTY -----\n"); return; }
+    printf("Queue contents:\n");
+    for (int i = front; i <= rear; i++) printf("%d\n", que[i]);
 }
 
 int main()
 {
     int choice, val;
-
-    do
-    {
-        printf("\n-------------------------\n");
-        printf("1. Enqueue\n2. Display\n3. Exit\n");
-        printf("-------------------------\n");
-        printf("Enter your choice: ");
-
-        if (scanf("%d", &choice) != 1)
-        {
-            printf("Invalid input.\n");
-            return 0;
-        }
-
+    do {
+        printf("\n1. Enqueue\n2. Display\n3. Exit\nEnter your choice: ");
+        if (scanf("%d", &choice) != 1) return 0;
         switch (choice)
         {
-        case 1:
-            printf("Enter value: ");
-            scanf("%d", &val);
-            enqueue(val);
-            break;
-
-        case 2:
-            display();
-            break;
-
-        case 3:
-            printf("Exiting program.\n");
-            break;
-
-        default:
-            printf("Invalid choice.\n");
+            case 1: printf("Enter value: "); scanf("%d", &val); enqueue(val); break;
+            case 2: display(); break;
+            case 3: printf("Exiting.\n"); break;
+            default: printf("Invalid choice.\n");
         }
-
     } while (choice != 3);
-
     return 0;
-}
-</code></pre>
-
-</div>
-<div class="code-container" id="code7">
-
-<div class="code-header">
-💻 7. Implement Dequeue using array implementation of Linear Queue
+}</code></pre>
+  </div>
 </div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
-
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- CARD 7 -->
+<div class="code-card" id="card7">
+  <div class="card-head">
+    <div class="num-badge">07</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-queue">Queue</div>
+      <div class="card-title">Dequeue using array implementation of Linear Queue</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">pre-filled queue</span>
+    <span class="chip">front++ on dequeue</span>
+    <span class="chip">-1 sentinel</span>
+    <span class="chip">rear=4 initial</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 #define SIZE 5
 
-int rear = 4;
-int front = 0;
+int rear = 4, front = 0;
 int que[SIZE] = {100, 200, 300, 400, 500};
 
-int isqueempty()
-{
-    return (front > rear);
-}
+int isqueempty() { return (front > rear); }
 
 int dequeue()
 {
-    if (isqueempty())
-    {
-        printf("----- Queue is EMPTY -----\n");
-        return -1;
-    }
-    else
-    {
-        int val = que[front];
-        front++;
-        return val;
-    }
+    if (isqueempty()) { printf("----- Queue is EMPTY -----\n"); return -1; }
+    return que[front++];
 }
 
 void display()
 {
-    if (isqueempty())
-    {
-        printf("----- Queue is EMPTY -----\n");
-    }
-    else
-    {
-        printf("Queue contents:\n");
-        for (int i = front; i <= rear; i++)
-        {
-            printf("%d\n", que[i]);
-        }
-    }
+    if (isqueempty()) { printf("----- Queue is EMPTY -----\n"); return; }
+    printf("Queue contents:\n");
+    for (int i = front; i <= rear; i++) printf("%d\n", que[i]);
 }
 
 int main()
 {
     int choice, val;
-
-    do
-    {
-        printf("\n-------------------------\n");
-        printf("1. Dequeue\n2. Display\n3. Exit\n");
-        printf("-------------------------\n");
-        printf("Enter your choice: ");
-
-        if (scanf("%d", &choice) != 1)
-        {
-            printf("Invalid input.\n");
-            return 0;
-        }
-
+    do {
+        printf("\n1. Dequeue\n2. Display\n3. Exit\nEnter your choice: ");
+        if (scanf("%d", &choice) != 1) return 0;
         switch (choice)
         {
-        case 1:
-            val = dequeue();
-            if (val != -1)
-                printf("Dequeued value = %d\n", val);
-            break;
-
-        case 2:
-            display();
-            break;
-
-        case 3:
-            printf("Exiting program.\n");
-            break;
-
-        default:
-            printf("Invalid choice.\n");
+            case 1: val = dequeue(); if (val != -1) printf("Dequeued value = %d\n", val); break;
+            case 2: display(); break;
+            case 3: printf("Exiting.\n"); break;
+            default: printf("Invalid choice.\n");
         }
-
     } while (choice != 3);
-
     return 0;
-}
-</code></pre>
-
-</div>
-<div class="code-container" id="code8">
-
-<div class="code-header">
-💻 8. To implement enqueue on a circular queue using array
+}</code></pre>
+  </div>
 </div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
-
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- CARD 8 -->
+<div class="code-card" id="card8">
+  <div class="card-head">
+    <div class="num-badge">08</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-queue">Circular Queue</div>
+      <div class="card-title">Enqueue on a circular queue using array</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">(rear+1)%MAX full</span>
+    <span class="chip">front=rear=-1 empty</span>
+    <span class="chip">modulo wrap-around</span>
+    <span class="chip">circular traversal</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 #define MAX 6
 
 int queue[MAX];
-int front = -1;
-int rear = -1;
+int front = -1, rear = -1;
 
 void enqueue(int element)
 {
     if ((rear + 1) % MAX == front)
-    {
         printf("Queue is FULL\n");
-    }
     else if (front == -1 && rear == -1)
     {
         front = rear = 0;
@@ -773,193 +878,188 @@ void enqueue(int element)
 
 void display()
 {
-    if (front == -1 && rear == -1)
+    if (front == -1 && rear == -1) { printf("Queue is EMPTY\n"); return; }
+    int i = front;
+    printf("Queue elements:\n");
+    while (1)
     {
-        printf("Queue is EMPTY\n");
-    }
-    else
-    {
-        int i = front;
-        printf("Queue elements:\n");
-        while (1)
-        {
-            printf("%d\n", queue[i]);
-            if (i == rear)
-                break;
-            i = (i + 1) % MAX;
-        }
+        printf("%d\n", queue[i]);
+        if (i == rear) break;
+        i = (i + 1) % MAX;
     }
 }
 
 int main()
 {
     int choice, x;
-
-    do
-    {
-        printf("\n1. Enqueue\n2. Display\n3. Exit\n");
-        printf("Enter choice: ");
-
-        if (scanf("%d", &choice) != 1)
-            return 0;
-
+    do {
+        printf("\n1. Enqueue\n2. Display\n3. Exit\nEnter choice: ");
+        if (scanf("%d", &choice) != 1) return 0;
         switch (choice)
         {
-        case 1:
-            printf("Enter element: ");
-            scanf("%d", &x);
-            enqueue(x);
-            break;
-
-        case 2:
-            display();
-            break;
-
-        case 3:
-            printf("Exiting...\n");
-            break;
-
-        default:
-            printf("Invalid choice\n");
+            case 1: printf("Enter element: "); scanf("%d", &x); enqueue(x); break;
+            case 2: display(); break;
+            case 3: printf("Exiting...\n"); break;
+            default: printf("Invalid choice\n");
         }
-
     } while (choice != 3);
-
     return 0;
-}
-</code></pre>
-
-</div>
-<div class="code-container" id="code9">
-
-<div class="code-header">
-💻 9. To implement dequeue on a circular queue using array
+}</code></pre>
+  </div>
 </div>
 
-<button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>
-<button class="run-btn" onclick="runCode()">🚀 Open GDB</button>
-
-<pre><code class="language-c">
-#include &lt;stdio.h&gt;
+<!-- CARD 9 -->
+<div class="code-card" id="card9">
+  <div class="card-head">
+    <div class="num-badge">09</div>
+    <div class="card-title-block">
+      <div class="topic-tag tag-queue">Circular Queue</div>
+      <div class="card-title">Dequeue on a circular queue using array</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
+      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+    </div>
+  </div>
+  <div class="concept-bar">
+    <span class="chip">front==rear → reset</span>
+    <span class="chip">front=(front+1)%MAX</span>
+    <span class="chip">pre-filled circular</span>
+    <span class="chip">-1,-1 sentinel reset</span>
+  </div>
+  <div class="toggle-row" onclick="toggleCode(this)">
+    <span class="toggle-label">view source code</span>
+    <span class="toggle-arrow">▼</span>
+  </div>
+  <div class="code-wrap">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
 #define MAX 6
 
 int queue[MAX] = {100, 200, 300, 400, 500};
-
-int front = 0;
-int rear = 4;
+int front = 0, rear = 4;
 
 int dequeue()
 {
-    if (front == -1 && rear == -1)
-    {
-        printf("Queue is EMPTY\n");
-        return -1;
-    }
-    else if (front == rear)
+    if (front == -1 && rear == -1) { printf("Queue is EMPTY\n"); return -1; }
+    if (front == rear)
     {
         int val = queue[front];
-        front = -1;
-        rear = -1;
+        front = rear = -1;
         return val;
     }
-    else
-    {
-        int val = queue[front];
-        front = (front + 1) % MAX;
-        return val;
-    }
+    int val = queue[front];
+    front = (front + 1) % MAX;
+    return val;
 }
 
 void display()
 {
-    if (front == -1 && rear == -1)
+    if (front == -1 && rear == -1) { printf("Queue is EMPTY\n"); return; }
+    int i = front;
+    printf("Queue elements:\n");
+    while (1)
     {
-        printf("Queue is EMPTY\n");
-    }
-    else
-    {
-        int i = front;
-        printf("Queue elements:\n");
-        while (1)
-        {
-            printf("%d\n", queue[i]);
-            if (i == rear)
-                break;
-            i = (i + 1) % MAX;
-        }
+        printf("%d\n", queue[i]);
+        if (i == rear) break;
+        i = (i + 1) % MAX;
     }
 }
 
 int main()
 {
     int choice, val;
-
-    do
-    {
-        printf("\n1. Dequeue\n2. Display\n3. Exit\n");
-        printf("Enter choice: ");
-
-        if (scanf("%d", &choice) != 1)
-            return 0;
-
+    do {
+        printf("\n1. Dequeue\n2. Display\n3. Exit\nEnter choice: ");
+        if (scanf("%d", &choice) != 1) return 0;
         switch (choice)
         {
-        case 1:
-            val = dequeue();
-            if (val != -1)
-                printf("Dequeued element = %d\n", val);
-            break;
-
-        case 2:
-            display();
-            break;
-
-        case 3:
-            printf("Exiting...\n");
-            break;
-
-        default:
-            printf("Invalid choice\n");
+            case 1: val = dequeue(); if (val != -1) printf("Dequeued element = %d\n", val); break;
+            case 2: display(); break;
+            case 3: printf("Exiting...\n"); break;
+            default: printf("Invalid choice\n");
         }
-
     } while (choice != 3);
-
     return 0;
-}
-</code></pre>
-
+}</code></pre>
+  </div>
 </div>
+
+</main>
+
+<footer>crafted for lab · C Data Structures · 2025 &nbsp;·&nbsp; open in any browser</footer>
+
+<!-- PRISM -->
 <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-c.min.js"></script>
 
 <script>
-function copyCode(btn) {
-  const code = btn.closest(".code-container").querySelector("code").innerText;
-
-  navigator.clipboard.writeText(code).then(() => {
-    btn.innerHTML = "🎉 Copied!";
-    launchConfetti();
-
-    setTimeout(() => {
-      btn.innerHTML = "📋 Copy Code";
-    }, 2000);
-  });
-}
-function launchConfetti() {
-  for (let i = 0; i < 40; i++) {
-    let confetti = document.createElement("div");
-    confetti.className = "confetti";
-
-    confetti.style.left = Math.random() * window.innerWidth + "px";
-    confetti.style.backgroundColor =
-      ["#f44336","#ffeb3b","#4caf50","#2196f3","#ff9800"][Math.floor(Math.random()*5)];
-
-    document.body.appendChild(confetti);
-
-    setTimeout(() => confetti.remove(), 1500);
+  /* ── Toggle code visibility ── */
+  function toggleCode(row) {
+    const wrap = row.nextElementSibling;
+    const isOpen = wrap.classList.contains('open');
+    row.classList.toggle('open', !isOpen);
+    wrap.classList.toggle('open', !isOpen);
+    row.querySelector('.toggle-label').textContent = isOpen ? 'view source code' : 'hide source code';
+    if (!isOpen) Prism.highlightAllUnder(wrap);
   }
-}
-function runCode() {
-  window.open("https://www.onlinegdb.com/online_c_compiler", "_blank");
-}
+
+  /* ── Copy code ── */
+  function copyCode(btn) {
+    const card = btn.closest('.code-card');
+    const code = card.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = '✅ Copied!';
+      launchConfetti();
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '📋 Copy'; }, 2200);
+    });
+  }
+
+  /* ── Confetti ── */
+  const COLORS = ['#f0c040','#5fe0b0','#ff6b6b','#a16bff','#60bfff'];
+  function launchConfetti() {
+    for (let i = 0; i < 50; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left:${Math.random()*100}vw;
+        background:${COLORS[Math.floor(Math.random()*5)]};
+        width:${6+Math.random()*6}px;
+        height:${6+Math.random()*6}px;
+        animation-delay:${Math.random()*0.4}s;
+        animation-duration:${1+Math.random()*0.6}s;
+        border-radius:${Math.random()>0.5?'50%':'3px'};
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+  }
+
+  /* ── Scroll-based card reveal ── */
+  const cards = document.querySelectorAll('.code-card');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  cards.forEach(c => observer.observe(c));
+
+  /* ── Active nav pill on scroll ── */
+  const pills = document.querySelectorAll('.nav-pill');
+  const sectIds = ['card1','card2','card3','card4','card5','card6','card7','card8','card9'];
+  window.addEventListener('scroll', () => {
+    let cur = '';
+    sectIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top < 160) cur = id;
+    });
+    pills.forEach(p => {
+      p.classList.toggle('active', p.getAttribute('href') === '#' + cur);
+    });
+  }, { passive: true });
 </script>
+</body>
+</html>
