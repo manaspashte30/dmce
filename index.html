@@ -1,1065 +1,1896 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>C · Data Structures Lab</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<link href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Environmental Chemistry & NCES — FE Sem II</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --card: #16161f;
-    --border: #1e1e2e;
-    --accent: #f0c040;
-    --accent2: #5fe0b0;
-    --accent3: #ff6b6b;
-    --text: #e8e8f0;
-    --muted: #6b6b88;
-    --mono: 'Space Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
-    --display: 'Syne', sans-serif;
+    --bg: #050a0f;
+    --surface: #0c1420;
+    --card: #111c2d;
+    --border: #1e3048;
+    --accent1: #00e5ff;
+    --accent2: #39ff7a;
+    --accent3: #ff6b35;
+    --accent4: #bf5af2;
+    --accent5: #ffd60a;
+    --text: #e8f4f8;
+    --muted: #7a9bb5;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html { scroll-behavior: smooth; }
+
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
+    font-family: var(--font-body);
     overflow-x: hidden;
+    cursor: default;
   }
 
-  /* ─── GRID NOISE BACKGROUND ─── */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(240,192,64,.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(240,192,64,.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
+  /* ── STARFIELD BG ── */
+  #stars {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 20% 30%, #0a1628 0%, #050a0f 70%);
   }
+  #stars canvas { width: 100%; height: 100%; }
 
-  /* ─── GLOW BLOBS ─── */
-  .glow-blob {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(120px);
-    opacity: 0.12;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .glow-blob.a { width: 500px; height: 500px; background: var(--accent); top: -100px; left: -100px; }
-  .glow-blob.b { width: 400px; height: 400px; background: var(--accent2); bottom: 100px; right: -80px; }
-  .glow-blob.c { width: 300px; height: 300px; background: var(--accent3); top: 50%; left: 50%; transform: translate(-50%,-50%); }
-
-  /* ─── HEADER ─── */
+  /* ── HEADER ── */
   header {
     position: relative; z-index: 10;
-    padding: 60px 40px 40px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    text-align: center;
+    padding: 80px 20px 60px;
+    overflow: hidden;
   }
-
-  .badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(240,192,64,.1);
-    border: 1px solid rgba(240,192,64,.25);
-    border-radius: 100px;
-    padding: 4px 14px;
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,229,255,0.08) 0%, transparent 70%);
+  }
+  .header-label {
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-family: var(--mono);
-    color: var(--accent);
-    letter-spacing: .12em;
+    letter-spacing: 4px;
+    color: var(--accent1);
     text-transform: uppercase;
-    width: fit-content;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
   }
-  .badge::before { content: '●'; font-size: 8px; animation: blink 1.4s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-
   h1 {
-    font-family: var(--display);
-    font-size: clamp(36px, 6vw, 72px);
+    font-family: var(--font-head);
+    font-size: clamp(36px, 7vw, 80px);
     font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    background: linear-gradient(120deg, #fff 30%, var(--accent) 70%);
+    line-height: 1.05;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 50%, var(--accent5) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
   }
-
-  .subtitle {
-    font-family: var(--mono);
-    font-size: 13px;
+  .header-sub {
+    font-family: var(--font-body);
+    font-size: 16px;
     color: var(--muted);
-    margin-top: 6px;
-    letter-spacing: .05em;
+    margin-top: 16px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
   }
-
-  /* ─── NAV PILLS ─── */
-  .nav-strip {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(10,10,15,.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 40px;
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
+  .badge-row {
+    display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+    margin-top: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
   }
-  .nav-strip::-webkit-scrollbar { display: none; }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .badge-cyan  { border-color: var(--accent1); color: var(--accent1); background: rgba(0,229,255,0.07); }
+  .badge-green { border-color: var(--accent2); color: var(--accent2); background: rgba(57,255,122,0.07); }
+  .badge-gold  { border-color: var(--accent5); color: var(--accent5); background: rgba(255,214,10,0.07); }
 
-  .nav-pill {
-    flex-shrink: 0;
-    display: flex; align-items: center; gap: 6px;
+  /* ── TOC ── */
+  .toc {
+    position: relative; z-index: 10;
+    max-width: 960px; margin: 0 auto 60px;
+    padding: 0 24px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .toc-item {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 7px 14px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    text-decoration: none;
-    transition: all .2s;
+    border-radius: 10px;
+    padding: 12px 16px;
     cursor: pointer;
+    transition: all 0.25s;
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--text);
   }
-  .nav-pill:hover, .nav-pill.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(240,192,64,.07);
+  .toc-item:hover {
+    border-color: var(--accent1);
+    background: rgba(0,229,255,0.06);
+    transform: translateY(-2px);
   }
-  .nav-pill .icon { font-size: 14px; }
-  .nav-pill .num {
-    background: var(--border);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 9px;
+  .toc-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent1);
+    min-width: 22px;
+  }
+  .toc-name { font-size: 13px; font-weight: 500; }
+
+  /* ── SECTION WRAPPER ── */
+  .section-wrap {
+    position: relative; z-index: 10;
+    max-width: 980px; margin: 0 auto 80px;
+    padding: 0 24px;
   }
 
-  /* ─── MAIN LAYOUT ─── */
-  main {
-    position: relative; z-index: 1;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 48px 40px;
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 60px;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  .q-card.visible { opacity: 1; transform: translateY(0); }
+
+  .q-header {
+    display: flex; align-items: center; gap: 18px;
+    padding: 28px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .q-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 0;
+  }
+  .q-title {
+    font-family: var(--font-head);
+    font-size: clamp(18px, 3vw, 26px);
+    font-weight: 700;
+  }
+  .q-body { padding: 0 32px 32px; }
+
+  /* colours per question */
+  .c1 .q-header { background: linear-gradient(135deg, rgba(0,229,255,0.12), transparent); border-bottom: 1px solid rgba(0,229,255,0.2); }
+  .c1 .q-num { background: rgba(0,229,255,0.15); color: var(--accent1); border: 1px solid var(--accent1); }
+  .c1 .q-title { color: var(--accent1); }
+  .c2 .q-header { background: linear-gradient(135deg, rgba(57,255,122,0.10), transparent); border-bottom: 1px solid rgba(57,255,122,0.2); }
+  .c2 .q-num { background: rgba(57,255,122,0.12); color: var(--accent2); border: 1px solid var(--accent2); }
+  .c2 .q-title { color: var(--accent2); }
+  .c3 .q-header { background: linear-gradient(135deg, rgba(191,90,242,0.12), transparent); border-bottom: 1px solid rgba(191,90,242,0.2); }
+  .c3 .q-num { background: rgba(191,90,242,0.12); color: var(--accent4); border: 1px solid var(--accent4); }
+  .c3 .q-title { color: var(--accent4); }
+  .c4 .q-header { background: linear-gradient(135deg, rgba(255,107,53,0.12), transparent); border-bottom: 1px solid rgba(255,107,53,0.2); }
+  .c4 .q-num { background: rgba(255,107,53,0.12); color: var(--accent3); border: 1px solid var(--accent3); }
+  .c4 .q-title { color: var(--accent3); }
+  .c5 .q-header { background: linear-gradient(135deg, rgba(255,214,10,0.10), transparent); border-bottom: 1px solid rgba(255,214,10,0.2); }
+  .c5 .q-num { background: rgba(255,214,10,0.10); color: var(--accent5); border: 1px solid var(--accent5); }
+  .c5 .q-title { color: var(--accent5); }
+
+  /* ── TYPOGRAPHY ── */
+  .sec-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 24px 0 8px;
+  }
+  .body-text {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #b8d4e8;
+    margin-bottom: 12px;
+  }
+  .bullet-list { list-style: none; padding: 0; margin: 8px 0 16px; }
+  .bullet-list li {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #b8d4e8;
+    padding: 6px 0 6px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    position: relative;
+  }
+  .bullet-list li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--accent1);
+    font-family: var(--font-mono);
+  }
+  .highlight { color: #e8f4f8; font-weight: 500; }
+  .key-box {
+    background: rgba(0,229,255,0.05);
+    border-left: 3px solid var(--accent1);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--accent1);
+    font-family: var(--font-mono);
+  }
+
+  /* ── NEW: DIAGRAM EXPLANATION BOX ── */
+  .diag-explain {
+    background: linear-gradient(135deg, rgba(191,90,242,0.06), rgba(0,229,255,0.04));
+    border: 1px solid rgba(191,90,242,0.3);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin: 16px 0 24px;
+    position: relative;
+  }
+  .diag-explain::before {
+    content: '📖 DIAGRAM EXPLAINED';
+    position: absolute;
+    top: -10px; left: 20px;
+    background: var(--card);
+    padding: 2px 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent4);
+    border: 1px solid rgba(191,90,242,0.4);
+    border-radius: 10px;
+  }
+  .diag-explain h4 {
+    font-family: var(--font-head);
+    font-size: 14px;
+    color: var(--accent4);
+    margin: 12px 0 6px;
+    letter-spacing: 0.5px;
+  }
+  .diag-explain h4:first-child { margin-top: 4px; }
+  .diag-explain p {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #c8d8e8;
+    margin-bottom: 8px;
+  }
+  .diag-explain .legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .diag-explain .legend-item {
     display: flex;
-    flex-direction: column;
-    gap: 40px;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #b8d4e8;
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    border-left: 3px solid;
+  }
+  .diag-explain .legend-item .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .diag-explain strong { color: var(--accent5); font-weight: 600; }
+  .read-flow {
+    background: rgba(255,214,10,0.06);
+    border-left: 3px solid var(--accent5);
+    padding: 10px 14px;
+    margin-top: 10px;
+    border-radius: 0 6px 6px 0;
+    font-size: 12.5px;
+    color: #e8d580;
+    font-family: var(--font-mono);
+    line-height: 1.7;
   }
 
-  /* ─── CODE CARD ─── */
-  .code-card {
+  /* ── REACTION TABLE ── */
+  .rxn-table {
+    width: 100%; border-collapse: collapse;
+    margin: 16px 0; font-size: 13px;
+  }
+  .rxn-table th {
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .rxn-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #b8d4e8;
+    vertical-align: middle;
+  }
+  .rxn-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .rxn-eq { color: var(--accent5); font-weight: 700; }
+  .rxn-note { color: var(--muted); font-family: var(--font-body); font-size: 12px; }
+
+  /* ── INFO GRID ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px; margin: 16px 0;
+  }
+  .info-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .info-card-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .info-card-val {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ── SVG DIAGRAM CONTAINER ── */
+  .diag-wrap {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .diag-wrap svg { display: block; max-width: 100%; margin: 0 auto; }
+  .diag-caption {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-top: 12px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 10;
+    text-align: center;
+    padding: 60px 20px 40px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    border-top: 1px solid var(--border);
+  }
+  .quick-rev {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
-    overflow: hidden;
-    transition: border-color .25s, transform .25s, box-shadow .25s;
+    padding: 28px 32px;
+    margin-bottom: 40px;
   }
-  .code-card:hover {
-    border-color: rgba(240,192,64,.3);
-    transform: translateY(-2px);
-    box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(240,192,64,.1);
+  .rev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px; margin-top: 16px;
   }
-
-  /* ─── CARD HEADER ─── */
-  .card-head {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 20px 24px 18px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-
-  .num-badge {
-    flex-shrink: 0;
-    width: 36px; height: 36px;
+  .rev-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
     border-radius: 10px;
-    background: rgba(240,192,64,.12);
-    border: 1px solid rgba(240,192,64,.25);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--mono);
+    padding: 12px 14px;
     font-size: 13px;
-    font-weight: 700;
-    color: var(--accent);
   }
+  .rev-topic { color: var(--accent1); font-weight: 600; font-size: 12px; margin-bottom: 4px; font-family: var(--font-mono); }
+  .rev-point { color: #b8d4e8; font-size: 12px; line-height: 1.5; }
 
-  .card-title-block { flex: 1; }
-  .topic-tag {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 6px;
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .tag-array { background: rgba(95,224,176,.12); color: var(--accent2); border: 1px solid rgba(95,224,176,.2); }
-  .tag-recursion { background: rgba(255,107,107,.12); color: var(--accent3); border: 1px solid rgba(255,107,107,.2); }
-  .tag-stack { background: rgba(161,107,255,.12); color: #a16bff; border: 1px solid rgba(161,107,255,.2); }
-  .tag-queue { background: rgba(240,192,64,.12); color: var(--accent); border: 1px solid rgba(240,192,64,.2); }
+  @keyframes flow {
+    0% { stroke-dashoffset: 100; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 4px currentColor); }
+    50% { filter: drop-shadow(0 0 12px currentColor); }
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes bounce-x {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(6px); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+  .anim-flow { animation: flow 2s linear infinite; stroke-dasharray: 10 5; }
+  .anim-pulse { animation: pulse-glow 2s ease-in-out infinite; }
+  .anim-spin  { transform-origin: center; animation: spin-slow 4s linear infinite; }
+  .anim-float { animation: float 3s ease-in-out infinite; }
+  .anim-breathe { animation: breathe 2s ease-in-out infinite; }
+  .anim-bounce { animation: bounce-x 1.5s ease-in-out infinite; }
 
-  .card-title {
-    font-family: var(--sans);
-    font-size: 14.5px;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1.4;
-  }
-
-  .card-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
-
-  .btn {
-    display: flex; align-items: center; gap: 6px;
-    border: none; border-radius: 8px;
-    padding: 8px 14px;
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all .18s;
-    letter-spacing: .04em;
-  }
-  .btn-copy {
-    background: rgba(95,224,176,.12);
-    color: var(--accent2);
-    border: 1px solid rgba(95,224,176,.2);
-  }
-  .btn-copy:hover { background: rgba(95,224,176,.22); transform: scale(1.04); }
-  .btn-copy.copied { background: rgba(95,224,176,.25); color: #fff; }
-
-  .btn-run {
-    background: rgba(240,192,64,.12);
-    color: var(--accent);
-    border: 1px solid rgba(240,192,64,.2);
-  }
-  .btn-run:hover { background: rgba(240,192,64,.22); transform: scale(1.04); }
-
-  /* ─── CODE AREA ─── */
-  .code-wrap {
-    position: relative;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height .45s cubic-bezier(.4,0,.2,1);
-  }
-  .code-wrap.open { max-height: 2000px; }
-
-  pre[class*="language-"] {
-    margin: 0 !important;
-    border-radius: 0 !important;
-    background: #0d0d14 !important;
-    font-family: var(--mono) !important;
-    font-size: 13px !important;
-    line-height: 1.7 !important;
-    padding: 24px !important;
-    overflow-x: auto;
-  }
-
-  /* ─── TOGGLE ROW ─── */
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 24px;
-    cursor: pointer;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-    transition: background .2s;
-    user-select: none;
-  }
-  .toggle-row:hover { background: rgba(240,192,64,.04); }
-
-  .toggle-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    flex: 1;
-  }
-  .toggle-arrow {
-    font-size: 12px;
-    color: var(--muted);
-    transition: transform .3s;
-  }
-  .toggle-row.open .toggle-arrow { transform: rotate(180deg); }
-
-  /* ─── CONCEPT CHIP ─── */
-  .concept-bar {
-    display: flex; flex-wrap: wrap; gap: 6px;
-    padding: 14px 24px;
-    border-top: 1px solid var(--border);
-    background: rgba(0,0,0,.2);
-  }
-  .chip {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    background: var(--border);
-    border-radius: 4px;
-    padding: 3px 9px;
-  }
-
-  /* ─── FOOTER ─── */
-  footer {
-    position: relative; z-index: 1;
-    text-align: center;
-    padding: 40px;
-    border-top: 1px solid var(--border);
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: .05em;
-  }
-
-  /* ─── CONFETTI ─── */
-  .confetti-piece {
-    position: fixed; width: 8px; height: 8px;
-    top: -10px; border-radius: 2px;
-    pointer-events: none; z-index: 9999;
-    animation: confetti-fall 1.2s ease-in forwards;
-  }
-  @keyframes confetti-fall {
-    to { transform: translateY(110vh) rotate(540deg); opacity: 0; }
-  }
-
-  /* ─── RESPONSIVE ─── */
-  @media(max-width:640px) {
-    header { padding: 40px 20px 30px; }
-    .nav-strip { padding: 12px 20px; }
-    main { padding: 32px 16px; }
-    .card-head { flex-wrap: wrap; }
-    .card-actions { width: 100%; justify-content: flex-end; }
-  }
-
-  /* ─── SCROLL ANIMATION ─── */
-  .code-card { opacity: 0; transform: translateY(24px); }
-  .code-card.visible { animation: card-in .5s cubic-bezier(.2,.8,.2,1) forwards; }
-  @keyframes card-in {
-    to { opacity: 1; transform: translateY(0); }
+  @media (max-width: 600px) {
+    .q-body { padding: 0 18px 24px; }
+    .q-header { padding: 20px 18px; }
+    .rxn-table { font-size: 11px; }
   }
 </style>
 </head>
 <body>
 
-<div class="glow-blob a"></div>
-<div class="glow-blob b"></div>
-<div class="glow-blob c"></div>
+<div id="stars"><canvas id="starsCanvas"></canvas></div>
 
 <!-- HEADER -->
 <header>
-  <div class="badge">C Programming · Lab Manual</div>
-  <h1>Data Structures<br/>in C</h1>
-  <p class="subtitle">// 9 programs · arrays · stacks · queues · recursion</p>
+  <p class="header-label">FE Sem-II (NEP) · Environmental Chemistry & NCES</p>
+  <h1>Top 13 Expected<br>Theory Questions</h1>
+  <p class="header-sub">Complete answers with animated diagrams & explanations · 1st Year Engineering</p>
+  <div class="badge-row">
+    <span class="badge badge-cyan">13 Topics Covered</span>
+    <span class="badge badge-green">Animated Diagrams</span>
+    <span class="badge badge-gold">Diagrams Explained</span>
+  </div>
 </header>
 
-<!-- NAV -->
-<nav class="nav-strip">
-  <a class="nav-pill" href="#card1"><span class="icon">➕</span> Insert <span class="num">01</span></a>
-  <a class="nav-pill" href="#card2"><span class="icon">➖</span> Delete <span class="num">02</span></a>
-  <a class="nav-pill" href="#card3"><span class="icon">🧮</span> Factorial <span class="num">03</span></a>
-  <a class="nav-pill" href="#card4"><span class="icon">📥</span> Push <span class="num">04</span></a>
-  <a class="nav-pill" href="#card5"><span class="icon">📤</span> Pop <span class="num">05</span></a>
-  <a class="nav-pill" href="#card6"><span class="icon">➡️</span> Enqueue <span class="num">06</span></a>
-  <a class="nav-pill" href="#card7"><span class="icon">⬅️</span> Dequeue <span class="num">07</span></a>
-  <a class="nav-pill" href="#card8"><span class="icon">🔄</span> C-Enqueue <span class="num">08</span></a>
-  <a class="nav-pill" href="#card9"><span class="icon">🔁</span> C-Dequeue <span class="num">09</span></a>
-</nav>
-
-<!-- MAIN -->
-<main>
-
-<!-- CARD 1 -->
-<div class="code-card" id="card1">
-  <div class="card-head">
-    <div class="num-badge">01</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-array">Array</div>
-      <div class="card-title">Insertion at a specific position in an array using a function</div>
-    </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
-    </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">for-loop shifting</span>
-    <span class="chip">pointer to size</span>
-    <span class="chip">bounds check</span>
-    <span class="chip">while(1) menu</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
-
-#define MAX_SIZE 100
-
-void insertAtPosition(int arr[], int *size, int element, int position)
-{
-    if (*size >= MAX_SIZE) { printf("Error: Array is full.\n"); return; }
-    if (position < 1 || position > *size + 1) { printf("Error: Invalid position.\n"); return; }
-
-    for (int i = *size; i >= position; i--)
-        arr[i] = arr[i - 1];
-
-    arr[position - 1] = element;
-    (*size)++;
-    printf("Inserted %d at position %d.\n", element, position);
-}
-
-void displayArray(int arr[], int size)
-{
-    if (size == 0) { printf("Array is empty.\n"); return; }
-    printf("Array elements: ");
-    for (int i = 0; i < size; i++) printf("%d ", arr[i]);
-    printf("\n");
-}
-
-int main()
-{
-    int arr[MAX_SIZE], size = 0, choice, element, position;
-    while (1)
-    {
-        printf("\nMenu:\n1. Insert element\n2. Display array\n3. Exit\nEnter your choice: ");
-        if (scanf("%d", &choice) != 1) { printf("Invalid input.\n"); return 0; }
-        switch (choice)
-        {
-            case 1:
-                printf("Enter element: "); scanf("%d", &element);
-                printf("Enter position (1 to %d): ", size + 1); scanf("%d", &position);
-                insertAtPosition(arr, &size, element, position);
-                break;
-            case 2: displayArray(arr, size); break;
-            case 3: printf("Exiting.\n"); return 0;
-            default: printf("Invalid choice.\n");
-        }
-    }
-}</code></pre>
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <div class="toc-grid">
+    <a class="toc-item" href="#q1"><span class="toc-num">01</span><span class="toc-name">Reverse Osmosis</span></a>
+    <a class="toc-item" href="#q2"><span class="toc-num">02</span><span class="toc-name">Ozone Depletion</span></a>
+    <a class="toc-item" href="#q3"><span class="toc-num">03</span><span class="toc-name">Photochemical Smog</span></a>
+    <a class="toc-item" href="#q4"><span class="toc-num">04</span><span class="toc-name">Hydrogen Fuel Cell</span></a>
+    <a class="toc-item" href="#q6"><span class="toc-num">06</span><span class="toc-name">Activated Sludge</span></a>
+    <a class="toc-item" href="#q7"><span class="toc-num">07</span><span class="toc-name">Waste Hierarchy</span></a>
+    <a class="toc-item" href="#q8"><span class="toc-num">08</span><span class="toc-name">Catalytic Converter</span></a>
+    <a class="toc-item" href="#q9"><span class="toc-num">09</span><span class="toc-name">Wind Energy</span></a>
+    <a class="toc-item" href="#q10"><span class="toc-num">10</span><span class="toc-name">Biomass Energy</span></a>
+    <a class="toc-item" href="#q11"><span class="toc-num">11</span><span class="toc-name">Natural Resource Mgmt</span></a>
+    <a class="toc-item" href="#q12"><span class="toc-num">12</span><span class="toc-name">Thermal Stratification</span></a>
+    <a class="toc-item" href="#q13"><span class="toc-num">13</span><span class="toc-name">Hydroelectric Plant</span></a>
+    <a class="toc-item" href="#q14"><span class="toc-num">14</span><span class="toc-name">Hazardous Waste</span></a>
   </div>
 </div>
 
-<!-- CARD 2 -->
-<div class="code-card" id="card2">
-  <div class="card-head">
-    <div class="num-badge">02</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-array">Array</div>
-      <div class="card-title">Deletion at a specific position in an array using a function</div>
+<div class="section-wrap">
+
+<!-- ═══════════════════════════════════════════════════ Q1 REVERSE OSMOSIS -->
+<div class="q-card c1" id="q1">
+  <div class="q-header">
+    <div class="q-num">01</div>
+    <div class="q-title">Reverse Osmosis (RO)</div>
+  </div>
+  <div class="q-body">
+    <p class="sec-label">Principle</p>
+    <p class="body-text">In normal osmosis, water moves from a dilute solution to a concentrated solution through a semi-permeable membrane. In <span class="highlight">Reverse Osmosis</span>, an external pressure <em>greater than the osmotic pressure</em> is applied on the saline side, forcing pure water molecules to pass through the membrane in the reverse direction, leaving dissolved salts, bacteria, and contaminants behind.</p>
+
+    <p class="sec-label">Animated Diagram</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 200" width="720" height="200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Feed tank -->
+        <rect x="20" y="50" width="100" height="120" rx="8" fill="#0d2137" stroke="#1e8bc3" stroke-width="1.5"/>
+        <text x="70" y="100" text-anchor="middle" fill="#7ecef4" font-size="12" font-family="Space Mono">Feed</text>
+        <text x="70" y="116" text-anchor="middle" fill="#7ecef4" font-size="11" font-family="Space Mono">Water</text>
+        <rect x="21" y="100" width="98" height="69" rx="0 0 7 7" fill="rgba(30,139,195,0.3)">
+          <animate attributeName="height" values="69;55;69" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="y" values="100;114;100" dur="3s" repeatCount="indefinite"/>
+        </rect>
+        <circle cx="45" cy="125" r="3" fill="#ff6b35" opacity="0.8"><animate attributeName="cy" values="125;115;130;125" dur="2s" repeatCount="indefinite"/></circle>
+        <circle cx="80" cy="140" r="3" fill="#ff6b35" opacity="0.8"><animate attributeName="cy" values="140;130;145;140" dur="2.5s" repeatCount="indefinite"/></circle>
+        <circle cx="105" cy="120" r="3" fill="#ff6b35" opacity="0.8"><animate attributeName="cy" values="120;110;125;120" dur="1.8s" repeatCount="indefinite"/></circle>
+        <text x="70" y="180" text-anchor="middle" fill="#ff6b35" font-size="9" font-family="Space Mono">Saline Water</text>
+
+        <rect x="150" y="80" width="80" height="60" rx="30" fill="#0f3460" stroke="#00e5ff" stroke-width="1.5"/>
+        <text x="190" y="106" text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono">HIGH</text>
+        <text x="190" y="120" text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono">PRESSURE</text>
+        <text x="190" y="134" text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono">PUMP</text>
+        <text x="190" y="180" text-anchor="middle" fill="#00e5ff" font-size="9" font-family="Space Mono">8–80 bar</text>
+        <circle cx="190" cy="110" r="18" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="2">
+          <animate attributeName="r" values="18;22;18" dur="1s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.3;0;0.3" dur="1s" repeatCount="indefinite"/>
+        </circle>
+
+        <line x1="120" y1="110" x2="150" y2="110" stroke="#1e8bc3" stroke-width="4"/>
+        <line x1="120" y1="110" x2="150" y2="110" stroke="#00e5ff" stroke-width="2" stroke-dasharray="8 6" class="anim-flow"/>
+
+        <rect x="260" y="30" width="22" height="160" rx="4" fill="#00e5ff" opacity="0.85"/>
+        <text x="271" y="22" text-anchor="middle" fill="#00e5ff" font-size="9" font-family="Space Mono">SEMI-PERMEABLE</text>
+        <text x="271" y="204" text-anchor="middle" fill="#00e5ff" font-size="9" font-family="Space Mono">MEMBRANE</text>
+        <circle cx="271" cy="70"  r="3" fill="#0c1420"><animate attributeName="r" values="3;4;3" dur="0.8s" repeatCount="indefinite"/></circle>
+        <circle cx="271" cy="95"  r="3" fill="#0c1420"><animate attributeName="r" values="3;4;3" dur="1.1s" repeatCount="indefinite"/></circle>
+        <circle cx="271" cy="120" r="3" fill="#0c1420"><animate attributeName="r" values="3;4;3" dur="0.9s" repeatCount="indefinite"/></circle>
+        <circle cx="271" cy="145" r="3" fill="#0c1420"><animate attributeName="r" values="3;4;3" dur="1.2s" repeatCount="indefinite"/></circle>
+
+        <line x1="230" y1="110" x2="260" y2="110" stroke="#1e8bc3" stroke-width="4"/>
+        <line x1="230" y1="110" x2="260" y2="110" stroke="#00e5ff" stroke-width="2" stroke-dasharray="8 6" class="anim-flow"/>
+
+        <rect x="300" y="55" width="130" height="90" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="1.5"/>
+        <text x="365" y="92" text-anchor="middle" fill="#39ff7a" font-size="12" font-family="Space Mono,monospace" font-weight="700">PERMEATE</text>
+        <text x="365" y="108" text-anchor="middle" fill="#39ff7a" font-size="11" font-family="Space Mono">(Pure Water)</text>
+        <rect x="301" y="110" width="128" height="34" rx="0 0 7 7" fill="rgba(57,255,122,0.12)">
+          <animate attributeName="height" values="34;40;34" dur="2s" repeatCount="indefinite"/>
+        </rect>
+        <circle cx="290" cy="90"  r="4" fill="#39ff7a" opacity="0">
+          <animate attributeName="cx" values="282;310" dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="290" cy="115" r="4" fill="#39ff7a" opacity="0">
+          <animate attributeName="cx" values="282;310" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+          <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+        </circle>
+        <circle cx="290" cy="140" r="4" fill="#39ff7a" opacity="0">
+          <animate attributeName="cx" values="282;310" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+          <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+        </circle>
+
+        <rect x="300" y="165" width="130" height="15" rx="4" fill="#1a0a00" stroke="#ff6b35" stroke-width="1.2"/>
+        <text x="365" y="195" text-anchor="middle" fill="#ff6b35" font-size="10" font-family="Space Mono">CONCENTRATE / BRINE</text>
+        <circle cx="250" cy="75"  r="3.5" fill="#ff6b35"><animate attributeName="cy" values="75;68;78;75" dur="2s" repeatCount="indefinite"/></circle>
+        <circle cx="245" cy="110" r="3.5" fill="#ff6b35"><animate attributeName="cy" values="110;105;115;110" dur="2.3s" repeatCount="indefinite"/></circle>
+        <circle cx="252" cy="145" r="3.5" fill="#ff6b35"><animate attributeName="cy" values="145;140;150;145" dur="1.9s" repeatCount="indefinite"/></circle>
+
+        <rect x="450" y="55" width="90" height="90" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="1.5"/>
+        <text x="495" y="100" text-anchor="middle" fill="#39ff7a" font-size="12" font-family="Space Mono">CLEAN</text>
+        <text x="495" y="116" text-anchor="middle" fill="#39ff7a" font-size="12" font-family="Space Mono">WATER</text>
+        <rect x="451" y="110" width="88" height="34" rx="0 0 7 7" fill="rgba(57,255,122,0.2)"/>
+        <line x1="430" y1="100" x2="450" y2="100" stroke="#39ff7a" stroke-width="3" stroke-dasharray="6 4" class="anim-flow"/>
+
+        <text x="540" y="80" fill="#ffd60a" font-size="22" font-family="Space Mono">⟸</text>
+        <text x="590" y="80" fill="#ffd60a" font-size="10" font-family="Space Mono">Applied</text>
+        <text x="590" y="93" fill="#ffd60a" font-size="10" font-family="Space Mono">Pressure</text>
+        <text x="590" y="106" fill="#ffd60a" font-size="10" font-family="Space Mono">> Osmotic P</text>
+
+        <text x="190" y="16" text-anchor="middle" fill="#00e5ff" font-size="11" font-family="Syne,sans-serif" font-weight="700">⬆ PRESSURE APPLIED</text>
+      </svg>
+      <p class="diag-caption">FIG 1.1 — REVERSE OSMOSIS UNIT · ANIMATED</p>
     </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This diagram illustrates a complete <strong>Reverse Osmosis (RO) water purification system</strong>, showing how dirty saline water is converted into clean drinking water by pushing it through a special filter using high pressure.</p>
+
+      <h4>Reading the Diagram (Left → Right)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#1e8bc3"><span class="dot" style="background:#1e8bc3"></span><span><strong>Blue Tank (Left):</strong> Feed Water with orange dots = dissolved salts/impurities</span></div>
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:#00e5ff"></span><span><strong>Cyan Pump:</strong> Pulsing ring shows it generates 8–80 bar pressure</span></div>
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:#00e5ff"></span><span><strong>Cyan Vertical Bar:</strong> Semi-permeable membrane with tiny pores</span></div>
+        <div class="legend-item" style="border-color:#39ff7a"><span class="dot" style="background:#39ff7a"></span><span><strong>Green dots flowing right:</strong> Pure H₂O molecules passing membrane</span></div>
+        <div class="legend-item" style="border-color:#ff6b35"><span class="dot" style="background:#ff6b35"></span><span><strong>Orange dots (stuck left):</strong> Salt particles rejected by membrane</span></div>
+        <div class="legend-item" style="border-color:#ffd60a"><span class="dot" style="background:#ffd60a"></span><span><strong>Yellow Arrow (⟸):</strong> External applied pressure direction</span></div>
+      </div>
+
+      <h4>The Animation Tells the Story</h4>
+      <p>Watch the <strong>green dots</strong> move from left to right through the membrane — these are pure water molecules being squeezed through. Meanwhile, <strong>orange dots bounce around on the left side</strong> because they're too large to pass through the membrane pores. This is the entire principle of RO: water passes, contaminants don't!</p>
+
+      <div class="read-flow">
+        ▶ FLOW: Saline Feed → Pump (adds pressure) → Membrane (filters) → Pure Water tank (right) + Brine waste (bottom)
+      </div>
     </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">left-shift elements</span>
-    <span class="chip">size decrement</span>
-    <span class="chip">pre-filled array</span>
-    <span class="chip">position validation</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
 
-#define MAX_SIZE 10
+    <p class="sec-label">Working</p>
+    <ul class="bullet-list">
+      <li>Feed water is pre-treated to remove suspended solids and chlorine (to protect membrane).</li>
+      <li>A high-pressure pump (8–80 bar) forces saline water against the semi-permeable membrane.</li>
+      <li>Pure water molecules pass through as <span class="highlight">permeate</span>; dissolved salts are rejected.</li>
+      <li>Concentrate (brine) is discharged separately. Recovery ratio typically 50–85%.</li>
+    </ul>
 
-void deleteAtPosition(int arr[], int *size, int position)
-{
-    if (*size == 0) { printf("Error: Array is empty.\n"); return; }
-    if (position < 1 || position > *size) { printf("Error: Invalid position.\n"); return; }
+    <p class="sec-label">Advantages</p>
+    <ul class="bullet-list">
+      <li>Removes up to <strong>99% of dissolved salts</strong>, bacteria, viruses, and heavy metals.</li>
+      <li>No chemicals required — environmentally cleaner process.</li>
+      <li>Compact design; suitable for domestic, municipal, and industrial use.</li>
+      <li>Effective for seawater desalination and brackish water treatment.</li>
+    </ul>
 
-    int deleted = arr[position - 1];
-    for (int i = position - 1; i < *size - 1; i++)
-        arr[i] = arr[i + 1];
-
-    (*size)--;
-    printf("Deleted element: %d\n", deleted);
-}
-
-void displayArray(int arr[], int size)
-{
-    if (size == 0) { printf("Array is empty.\n"); return; }
-    printf("Array elements: ");
-    for (int i = 0; i < size; i++) printf("%d ", arr[i]);
-    printf("\n");
-}
-
-int main()
-{
-    int arr[MAX_SIZE] = {10,20,30,40,50,60,70,80,90,100};
-    int size = 10, choice, position;
-    while (1)
-    {
-        printf("\nMenu:\n1. Delete element\n2. Display array\n3. Exit\nEnter your choice: ");
-        if (scanf("%d", &choice) != 1) { printf("Invalid input.\n"); return 0; }
-        switch (choice)
-        {
-            case 1:
-                printf("Enter position (1 to %d): ", size); scanf("%d", &position);
-                deleteAtPosition(arr, &size, position);
-                break;
-            case 2: displayArray(arr, size); break;
-            case 3: printf("Exiting.\n"); return 0;
-            default: printf("Invalid choice.\n");
-        }
-    }
-}</code></pre>
+    <p class="sec-label">Limitations</p>
+    <ul class="bullet-list">
+      <li>High energy consumption due to high-pressure pump requirement.</li>
+      <li>Cannot remove dissolved gases (CO₂, H₂S) completely.</li>
+      <li>Membrane fouling by CaCO₃, MgSO₄ requires periodic cleaning.</li>
+      <li>Generates large volumes of brine concentrate — disposal concern.</li>
+      <li>Mandatory pre-treatment adds to overall cost.</li>
+    </ul>
+    <div class="key-box">KEY POINT: Osmotic pressure ∝ solute concentration. Applied pressure must exceed osmotic pressure (typically 25–80 bar) to force water across the membrane.</div>
   </div>
 </div>
 
-<!-- CARD 3 -->
-<div class="code-card" id="card3">
-  <div class="card-head">
-    <div class="num-badge">03</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-recursion">Recursion</div>
-      <div class="card-title">Factorial of a number using recursion</div>
+<!-- ═══════════════════════════════════════════════ Q2 OZONE DEPLETION -->
+<div class="q-card c2" id="q2">
+  <div class="q-header">
+    <div class="q-num">02</div>
+    <div class="q-title">Ozone Layer Depletion</div>
+  </div>
+  <div class="q-body">
+    <p class="sec-label">What is the Ozone Layer?</p>
+    <p class="body-text">The ozone layer is a region of Earth's <span class="highlight">stratosphere (15–35 km altitude)</span> containing high concentrations of ozone (O₃). It absorbs 97–99% of harmful UV-B and UV-C radiation from the sun, acting as Earth's sunscreen.</p>
+
+    <p class="sec-label">Animated Diagram — Depletion Mechanism</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 220" width="720" height="220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="185" width="720" height="35" rx="0" fill="#1a3a1a"/>
+        <text x="360" y="205" text-anchor="middle" fill="#39ff7a" font-size="11" font-family="Space Mono">EARTH SURFACE</text>
+        <rect x="0" y="135" width="720" height="50" rx="0" fill="rgba(57,255,122,0.05)"/>
+        <text x="15" y="165" fill="#39ff7a" font-size="9" font-family="Space Mono" opacity="0.6">TROPOSPHERE</text>
+        <rect x="0" y="70" width="720" height="65" rx="0" fill="rgba(0,229,255,0.08)"/>
+        <text x="15" y="95" fill="#00e5ff" font-size="9" font-family="Space Mono">STRATOSPHERE</text>
+        <text x="180" y="100" fill="#00e5ff" font-size="18" opacity="0.9" class="anim-breathe">O₃</text>
+        <text x="280" y="115" fill="#00e5ff" font-size="18" opacity="0.9" class="anim-breathe" style="animation-delay:0.5s">O₃</text>
+        <text x="380" y="90"  fill="#00e5ff" font-size="18" opacity="0.9" class="anim-breathe" style="animation-delay:1s">O₃</text>
+        <text x="480" y="112" fill="#00e5ff" font-size="18" opacity="0.9" class="anim-breathe" style="animation-delay:1.5s">O₃</text>
+        <ellipse cx="580" cy="100" rx="55" ry="35" fill="rgba(255,107,53,0.25)" stroke="#ff6b35" stroke-width="2" stroke-dasharray="6 4">
+          <animate attributeName="rx" values="55;65;55" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="ry" values="35;42;35" dur="2s" repeatCount="indefinite"/>
+        </ellipse>
+        <text x="580" y="97"  text-anchor="middle" fill="#ff6b35" font-size="11" font-family="Space Mono" font-weight="700">OZONE</text>
+        <text x="580" y="112" text-anchor="middle" fill="#ff6b35" font-size="11" font-family="Space Mono" font-weight="700">HOLE</text>
+
+        <circle cx="60" cy="36" r="28" fill="#ffd60a" opacity="0.9"/>
+        <text x="60" y="40" text-anchor="middle" fill="#0c1420" font-size="11" font-family="Space Mono" font-weight="700">SUN</text>
+        <line x1="90" y1="30" x2="115" y2="22" stroke="#ffd60a" stroke-width="2" opacity="0.6"/>
+        <line x1="92" y1="44" x2="118" y2="50" stroke="#ffd60a" stroke-width="2" opacity="0.6"/>
+
+        <line x1="88" y1="36" x2="175" y2="100" stroke="#ff6b35" stroke-width="2.5" stroke-dasharray="8 5" class="anim-flow"/>
+        <text x="110" y="60" fill="#ff6b35" font-size="10" font-family="Space Mono">UV-B/C</text>
+        <line x1="580" y1="135" x2="560" y2="185" stroke="#ff0000" stroke-width="2.5" opacity="0.9">
+          <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1s" repeatCount="indefinite"/>
+        </line>
+        <text x="595" y="162" fill="#ff0000" font-size="10" font-family="Space Mono">UV reaches</text>
+        <text x="595" y="174" fill="#ff0000" font-size="10" font-family="Space Mono">Earth! ☠</text>
+
+        <text x="350" y="170" fill="#bf5af2" font-size="12" font-family="Space Mono">CFC (CCl₂F₂)</text>
+        <line x1="390" y1="155" x2="420" y2="125" stroke="#bf5af2" stroke-width="1.5" stroke-dasharray="5 4" class="anim-flow"/>
+        <text x="430" y="118" fill="#ffd60a" font-size="10" font-family="Space Mono">→ Cl•</text>
+        <text x="460" y="130" fill="#ffd60a" font-size="9" font-family="Space Mono">destroys O₃!</text>
+        <circle cx="540" cy="75" r="10" fill="none" stroke="#ffd60a" stroke-width="1.5" stroke-dasharray="4 3" class="anim-spin"/>
+        <text x="556" y="68" fill="#ffd60a" font-size="8" font-family="Space Mono">chain</text>
+        <text x="556" y="78" fill="#ffd60a" font-size="8" font-family="Space Mono">rxn</text>
+
+        <text x="240" y="182" fill="#bf5af2" font-size="9" font-family="Space Mono">Sources: Refrigerators, AC units, Aerosol sprays → CFCs, HCFCs, Halons</text>
+      </svg>
+      <p class="diag-caption">FIG 2.1 — OZONE LAYER DEPLETION BY CFCs · ANIMATED</p>
     </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This diagram depicts how <strong>CFCs (Chlorofluorocarbons) destroy the ozone layer</strong>, creating an "ozone hole" that lets dangerous UV radiation reach Earth's surface.</p>
+
+      <h4>Layers from Top to Bottom</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#ffd60a"><span class="dot" style="background:#ffd60a"></span><span><strong>Yellow Sun (top-left):</strong> Source of UV-B/C radiation</span></div>
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:rgba(0,229,255,0.3)"></span><span><strong>Cyan band (middle):</strong> Stratosphere with O₃ molecules (pulsing)</span></div>
+        <div class="legend-item" style="border-color:#ff6b35"><span class="dot" style="background:rgba(255,107,53,0.4)"></span><span><strong>Orange dashed oval:</strong> The OZONE HOLE (expanding/contracting)</span></div>
+        <div class="legend-item" style="border-color:#39ff7a"><span class="dot" style="background:rgba(57,255,122,0.1)"></span><span><strong>Green band:</strong> Troposphere (where we live)</span></div>
+        <div class="legend-item" style="border-color:#bf5af2"><span class="dot" style="background:#bf5af2"></span><span><strong>Purple text & line:</strong> CFC rising from Earth → Stratosphere</span></div>
+        <div class="legend-item" style="border-color:#ff0000"><span class="dot" style="background:#ff0000"></span><span><strong>Red blinking line:</strong> Harmful UV reaching Earth through the hole</span></div>
+      </div>
+
+      <h4>The Story in 3 Steps</h4>
+      <p><strong>Step 1:</strong> CFCs from refrigerators/AC (purple text at bottom) drift upward into the stratosphere.<br>
+      <strong>Step 2:</strong> UV from the Sun breaks CFC apart, releasing chlorine radicals (Cl•) — the yellow spinning circle shows this "chain reaction".<br>
+      <strong>Step 3:</strong> Each Cl• destroys ~100,000 ozone molecules, creating the orange "hole" on the right side. Now UV passes straight down (red flashing line) to harm life.</p>
+
+      <div class="read-flow">
+        ▶ CAUSE & EFFECT: CFC released ↑ → UV breaks CFC → Cl• attacks O₃ → Hole forms → UV reaches Earth ↓
+      </div>
     </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">base case n=0,1</span>
-    <span class="chip">recursive call</span>
-    <span class="chip">long long return</span>
-    <span class="chip">negative guard</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
 
-long long factorial(int n)
-{
-    if (n < 0)  return -1;   // error sentinel
-    if (n == 0 || n == 1) return 1;
-    return n * factorial(n - 1);
-}
+    <p class="sec-label">Mechanism — Chemical Reactions</p>
+    <table class="rxn-table">
+      <tr><th>Step</th><th>Reaction</th><th>Description</th></tr>
+      <tr><td>1 — CFC Photolysis</td><td class="rxn-eq">CCl₂F₂ + UV → CClF₂ + Cl•</td><td class="rxn-note">UV breaks C-Cl bond, releasing free chlorine radical</td></tr>
+      <tr><td>2 — O₃ Destruction</td><td class="rxn-eq">Cl• + O₃ → ClO• + O₂</td><td class="rxn-note">Cl• attacks ozone, produces chlorine monoxide</td></tr>
+      <tr><td>3 — Cl• Regenerated</td><td class="rxn-eq">ClO• + O• → Cl• + O₂</td><td class="rxn-note">Cl• regenerated → chain reaction (1 Cl• destroys 100,000 O₃)</td></tr>
+      <tr><td>Net Reaction</td><td class="rxn-eq">O₃ + O• → 2O₂</td><td class="rxn-note">Net: Ozone depleted without consuming Cl•</td></tr>
+    </table>
 
-int main()
-{
-    int num;
-    printf("Enter a number: ");
-    if (scanf("%d", &num) != 1) { printf("Invalid input.\n"); return 0; }
+    <p class="sec-label">Causes</p>
+    <ul class="bullet-list">
+      <li><span class="highlight">CFCs</span> (chlorofluorocarbons) from refrigerators, AC units, aerosol sprays — #1 cause.</li>
+      <li>HCFCs, halons from fire extinguishers and industrial solvents.</li>
+      <li>N₂O (nitrous oxide) from agricultural fertilizers and jet exhaust.</li>
+      <li>Methyl bromide (CH₃Br) used as pesticide fumigant.</li>
+    </ul>
 
-    long long result = factorial(num);
-    if (result == -1)
-        printf("Factorial not defined for negative numbers.\n");
-    else
-        printf("Factorial of %d is: %lld\n", num, result);
-
-    return 0;
-}</code></pre>
+    <p class="sec-label">Effects</p>
+    <ul class="bullet-list">
+      <li>Increased UV-B → skin cancer, melanoma, cataracts, weakened immune system.</li>
+      <li>Damage to marine phytoplankton → disrupts entire aquatic food chain.</li>
+      <li>Reduced agricultural crop yields (DNA damage in plants).</li>
+      <li>Contributes to tropospheric ozone (smog) and climate change.</li>
+      <li>Degradation of plastics, rubber, and paints exposed to UV.</li>
+    </ul>
+    <div class="key-box">MONTREAL PROTOCOL (1987): International treaty to phase out ozone-depleting substances. The Antarctic ozone hole is slowly recovering — expected full recovery by ~2065.</div>
   </div>
 </div>
 
-<!-- CARD 4 -->
-<div class="code-card" id="card4">
-  <div class="card-head">
-    <div class="num-badge">04</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-stack">Stack</div>
-      <div class="card-title">Push and display on a stack using array</div>
+<!-- ═══════════════════════════════════════════ Q3 PHOTOCHEMICAL SMOG -->
+<div class="q-card c3" id="q3">
+  <div class="q-header">
+    <div class="q-num">03</div>
+    <div class="q-title">Photochemical Smog</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text"><span class="highlight">Photochemical smog</span> is a brownish haze formed when primary pollutants (NOₓ and VOCs from vehicle exhaust) react with sunlight to produce harmful secondary pollutants. It is also called <em>Los Angeles type smog</em>.</p>
+
+    <p class="sec-label">Formation — Animated Pathway</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 180" width="720" height="180" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1a1000"/>
+            <stop offset="100%" stop-color="#2d1b00"/>
+          </linearGradient>
+        </defs>
+        <rect width="720" height="180" fill="url(#sky)"/>
+        <rect width="720" height="60" y="100" fill="rgba(139,90,0,0.3)" rx="0"/>
+
+        <circle cx="50" cy="40" r="26" fill="#ffd60a">
+          <animate attributeName="r" values="26;29;26" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <text x="50" y="44" text-anchor="middle" fill="#0c1420" font-size="10" font-family="Space Mono" font-weight="700">SUN</text>
+        <text x="50" y="75" text-anchor="middle" fill="#ffd60a" font-size="9" font-family="Space Mono">hν (UV)</text>
+
+        <rect x="110" y="20" width="130" height="80" rx="8" fill="#1a0a00" stroke="#ff6b35" stroke-width="1.5"/>
+        <text x="175" y="45"  text-anchor="middle" fill="#ff6b35" font-size="11" font-family="Space Mono" font-weight="700">PRIMARY</text>
+        <text x="175" y="60"  text-anchor="middle" fill="#ff6b35" font-size="11" font-family="Space Mono" font-weight="700">POLLUTANTS</text>
+        <text x="175" y="77"  text-anchor="middle" fill="#e8d5c0" font-size="10" font-family="Space Mono">NO, NO₂, VOCs</text>
+        <text x="175" y="92"  text-anchor="middle" fill="#e8d5c0" font-size="9" font-family="Space Mono">from vehicles/industry</text>
+
+        <rect x="280" y="20" width="130" height="80" rx="8" fill="#16001a" stroke="#bf5af2" stroke-width="1.5"/>
+        <text x="345" y="45"  text-anchor="middle" fill="#bf5af2" font-size="11" font-family="Space Mono" font-weight="700">UV REACTION</text>
+        <text x="345" y="62"  text-anchor="middle" fill="#e8d5c0" font-size="10" font-family="Space Mono">NO₂ + hν → NO + O•</text>
+        <text x="345" y="77"  text-anchor="middle" fill="#e8d5c0" font-size="10" font-family="Space Mono">O• + O₂ → O₃</text>
+        <text x="345" y="92"  text-anchor="middle" fill="#bf5af2" font-size="9" font-family="Space Mono">free radicals formed</text>
+
+        <rect x="450" y="20" width="130" height="80" rx="8" fill="#1a1000" stroke="#ffd60a" stroke-width="1.5"/>
+        <text x="515" y="45"  text-anchor="middle" fill="#ffd60a" font-size="11" font-family="Space Mono" font-weight="700">SECONDARY</text>
+        <text x="515" y="60"  text-anchor="middle" fill="#ffd60a" font-size="11" font-family="Space Mono" font-weight="700">POLLUTANTS</text>
+        <text x="515" y="76"  text-anchor="middle" fill="#e8d5c0" font-size="10" font-family="Space Mono">O₃, PAN, HCHO</text>
+        <text x="515" y="91"  text-anchor="middle" fill="#e8d5c0" font-size="9" font-family="Space Mono">Acrolein, Aldehydes</text>
+
+        <rect x="610" y="20" width="105" height="80" rx="8" fill="#2d1000" stroke="#ff0000" stroke-width="2"/>
+        <text x="662" y="47"  text-anchor="middle" fill="#ff4444" font-size="11" font-family="Space Mono" font-weight="700">SMOG</text>
+        <text x="662" y="63"  text-anchor="middle" fill="#e8d5c0" font-size="9" font-family="Space Mono">Brown haze</text>
+        <text x="662" y="76"  text-anchor="middle" fill="#e8d5c0" font-size="9" font-family="Space Mono">Eye irritation</text>
+        <text x="662" y="89"  text-anchor="middle" fill="#e8d5c0" font-size="9" font-family="Space Mono">Crop damage</text>
+
+        <line x1="75" y1="60" x2="108" y2="60" stroke="#ffd60a" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+        <line x1="240" y1="60" x2="278" y2="60" stroke="#ff6b35" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+        <line x1="410" y1="60" x2="448" y2="60" stroke="#bf5af2" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+        <line x1="580" y1="60" x2="608" y2="60" stroke="#ff4444" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+
+        <circle cx="150" cy="130" r="25" fill="rgba(139,90,0,0.4)" class="anim-float"/>
+        <circle cx="300" cy="140" r="35" fill="rgba(139,90,0,0.35)" class="anim-float" style="animation-delay:1s"/>
+        <circle cx="450" cy="125" r="30" fill="rgba(139,90,0,0.4)" class="anim-float" style="animation-delay:0.5s"/>
+        <circle cx="600" cy="135" r="40" fill="rgba(139,90,0,0.45)" class="anim-float" style="animation-delay:1.5s"/>
+        <text x="360" y="162" text-anchor="middle" fill="#cc7700" font-size="10" font-family="Space Mono">▼ BROWN HAZE LAYER — visibility reduced, lungs damaged</text>
+        <text x="200" y="175" fill="#888" font-size="14">🚗 🚌 🏭</text>
+        <text x="350" y="175" fill="#888" font-size="10" font-family="Space Mono">Emission Sources</text>
+      </svg>
+      <p class="diag-caption">FIG 3.1 — PHOTOCHEMICAL SMOG FORMATION PATHWAY</p>
     </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This is a <strong>4-stage flowchart</strong> showing how harmless vehicle exhaust + sunlight transforms into toxic brown smog. Read it like a comic strip — left to right.</p>
+
+      <h4>The 4 Stages (Boxes Left to Right)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#ffd60a"><span class="dot" style="background:#ffd60a"></span><span><strong>Sun (yellow circle):</strong> Provides UV radiation (hν) — the trigger</span></div>
+        <div class="legend-item" style="border-color:#ff6b35"><span class="dot" style="background:#ff6b35"></span><span><strong>Box 1 (orange):</strong> Primary pollutants — NO, NO₂, VOCs directly from cars</span></div>
+        <div class="legend-item" style="border-color:#bf5af2"><span class="dot" style="background:#bf5af2"></span><span><strong>Box 2 (purple):</strong> UV breaks NO₂ apart → forms free radicals & ozone</span></div>
+        <div class="legend-item" style="border-color:#ffd60a"><span class="dot" style="background:#ffd60a"></span><span><strong>Box 3 (yellow):</strong> Secondary pollutants — O₃, PAN, aldehydes (the real killers)</span></div>
+        <div class="legend-item" style="border-color:#ff0000"><span class="dot" style="background:#ff0000"></span><span><strong>Box 4 (red):</strong> Final result — visible brown smog with health effects</span></div>
+      </div>
+
+      <h4>Bottom Layer: The Visible Smog</h4>
+      <p>The <strong>floating brown bubbles</strong> at the bottom represent actual smog particles hanging in the air over a city. Below them, the car/bus/factory emojis (🚗 🚌 🏭) remind us of the pollution sources. The animated dashed arrows between boxes show the chemical transformation is continuous.</p>
+
+      <div class="read-flow">
+        ▶ CHAIN: Sun ☀ + Car exhaust → UV reactions → Toxic radicals → Brown smog hanging over city
+      </div>
     </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">global top=-1</span>
-    <span class="chip">isfull() check</span>
-    <span class="chip">top-to-bottom display</span>
-    <span class="chip">SIZE=5</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
-#define SIZE 5
 
-int top = -1;
-int STK[SIZE];
+    <p class="sec-label">Key Chemical Reactions</p>
+    <table class="rxn-table">
+      <tr><th>Reaction</th><th>Equation</th><th>Note</th></tr>
+      <tr><td>NO₂ Photolysis</td><td class="rxn-eq">NO₂ + hν → NO + O•</td><td class="rxn-note">UV splits NO₂</td></tr>
+      <tr><td>Ozone formation</td><td class="rxn-eq">O• + O₂ → O₃</td><td class="rxn-note">Ground-level O₃ (harmful)</td></tr>
+      <tr><td>VOC oxidation</td><td class="rxn-eq">VOC + OH• → RO₂•</td><td class="rxn-note">Peroxy radicals formed</td></tr>
+      <tr><td>PAN formation</td><td class="rxn-eq">CH₃CO₃• + NO₂ → PAN</td><td class="rxn-note">Peroxyacetyl Nitrate — powerful irritant</td></tr>
+    </table>
 
-int isfull()  { return (top == SIZE - 1); }
-int isempty() { return (top == -1); }
-
-void push(int val)
-{
-    if (isfull()) printf("----- Stack is FULL -----\n");
-    else { STK[++top] = val; printf("Pushed %d into stack.\n", val); }
-}
-
-void display()
-{
-    if (isempty()) { printf("----- Stack is EMPTY -----\n"); return; }
-    printf("Stack contents (top to bottom):\n");
-    for (int i = top; i >= 0; i--) printf("%d\n", STK[i]);
-}
-
-int main()
-{
-    int choice, val;
-    do {
-        printf("\n1. Push\n2. Display\n3. Exit\nEnter your choice: ");
-        if (scanf("%d", &choice) != 1) return 0;
-        switch (choice)
-        {
-            case 1: printf("Enter value: "); scanf("%d", &val); push(val); break;
-            case 2: display(); break;
-            case 3: printf("Exiting.\n"); break;
-            default: printf("Invalid choice.\n");
-        }
-    } while (choice != 3);
-    return 0;
-}</code></pre>
+    <p class="sec-label">Effects</p>
+    <ul class="bullet-list">
+      <li>Eye, throat, and respiratory irritation (O₃ and PAN are powerful irritants).</li>
+      <li>Reduced visibility — traffic and aviation hazard (brown haze).</li>
+      <li>Crop damage: PAN causes silvering of leaves; O₃ bleaches foliage.</li>
+      <li>Aggravates asthma, bronchitis, and cardiovascular diseases.</li>
+      <li>Rubber cracking and paint deterioration.</li>
+    </ul>
+    <div class="key-box">CONDITIONS: Sunny + warm + low wind + urban traffic = perfect smog conditions. Classic example: Los Angeles, Mexico City, Beijing.</div>
   </div>
 </div>
 
-<!-- CARD 5 -->
-<div class="code-card" id="card5">
-  <div class="card-head">
-    <div class="num-badge">05</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-stack">Stack</div>
-      <div class="card-title">Pop and display on a stack using array</div>
+<!-- ═══════════════════════════════════════ Q4 HYDROGEN FUEL CELL -->
+<div class="q-card c4" id="q4">
+  <div class="q-header">
+    <div class="q-num">04</div>
+    <div class="q-title">Hydrogen Fuel Cell</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text"><span class="highlight">Hydrogen Fuel Cell</span> converts chemical energy of H₂ directly into electrical energy via electrochemical reactions. No combustion involved. Only byproduct: <strong>water (H₂O)</strong>. Works like a continuous battery as long as H₂ and O₂ are supplied.</p>
+
+    <p class="sec-label">Animated Diagram — PEM Fuel Cell</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 220" width="720" height="220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="30" width="160" height="150" rx="10" fill="#0a1f38" stroke="#1e8bc3" stroke-width="2"/>
+        <text x="110" y="60"  text-anchor="middle" fill="#00e5ff" font-size="13" font-family="Syne,sans-serif" font-weight="700">ANODE (−)</text>
+        <text x="110" y="80"  text-anchor="middle" fill="#7ecef4" font-size="11" font-family="Space Mono">Oxidation</text>
+        <text x="110" y="110" text-anchor="middle" fill="#ffd60a" font-size="12" font-family="Space Mono" font-weight="700">2H₂ →</text>
+        <text x="110" y="128" text-anchor="middle" fill="#ffd60a" font-size="12" font-family="Space Mono" font-weight="700">4H⁺ + 4e⁻</text>
+        <circle cx="70"  cy="155" r="4" fill="#aaa"/>
+        <circle cx="90"  cy="152" r="4" fill="#aaa"/>
+        <circle cx="110" cy="158" r="4" fill="#aaa"/>
+        <circle cx="130" cy="153" r="4" fill="#aaa"/>
+        <circle cx="150" cy="156" r="4" fill="#aaa"/>
+        <text x="110" y="178" text-anchor="middle" fill="#888" font-size="9" font-family="Space Mono">Pt catalyst</text>
+        <text x="8" y="100" fill="#00e5ff" font-size="14">H₂</text>
+        <text x="8" y="120" fill="#00e5ff" font-size="14">H₂</text>
+        <line x1="28" y1="100" x2="32" y2="100" stroke="#00e5ff" stroke-width="2" stroke-dasharray="5 3" class="anim-flow"/>
+        <line x1="28" y1="118" x2="32" y2="118" stroke="#00e5ff" stroke-width="2" stroke-dasharray="5 3" class="anim-flow"/>
+
+        <rect x="200" y="30" width="36" height="150" rx="6" fill="#00e5ff" opacity="0.8"/>
+        <text x="218" y="22"  text-anchor="middle" fill="#00e5ff" font-size="9" font-family="Space Mono">PEM</text>
+        <text x="218" y="195" text-anchor="middle" fill="#00e5ff" font-size="8" font-family="Space Mono">Nafion®</text>
+        <circle cx="218" cy="80" r="5" fill="#ffd60a">
+          <animate attributeName="cx" values="195;218;240" dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="218" cy="110" r="5" fill="#ffd60a">
+          <animate attributeName="cx" values="195;218;240" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+          <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+        </circle>
+        <circle cx="218" cy="140" r="5" fill="#ffd60a">
+          <animate attributeName="cx" values="195;218;240" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+          <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+        </circle>
+        <text x="218" y="108" text-anchor="middle" fill="#ffd60a" font-size="10" font-family="Space Mono">H⁺→</text>
+
+        <rect x="244" y="30" width="160" height="150" rx="10" fill="#1a0a0a" stroke="#ff6b35" stroke-width="2"/>
+        <text x="324" y="60"  text-anchor="middle" fill="#ff6b35" font-size="13" font-family="Syne,sans-serif" font-weight="700">CATHODE (+)</text>
+        <text x="324" y="80"  text-anchor="middle" fill="#e8a090" font-size="11" font-family="Space Mono">Reduction</text>
+        <text x="324" y="108" text-anchor="middle" fill="#ffd60a" font-size="11" font-family="Space Mono" font-weight="700">O₂+4H⁺+4e⁻</text>
+        <text x="324" y="126" text-anchor="middle" fill="#ffd60a" font-size="11" font-family="Space Mono" font-weight="700">→ 2H₂O</text>
+        <text x="415" y="100" fill="#ff6b35" font-size="14">O₂</text>
+        <line x1="404" y1="100" x2="405" y2="100" stroke="#ff6b35" stroke-width="2" stroke-dasharray="5 3" class="anim-flow"/>
+        <circle cx="324" cy="158" r="8" fill="#39ff7a" opacity="0.8">
+          <animate attributeName="cy" values="158;175;158" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0;0.8" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <text x="324" y="195" text-anchor="middle" fill="#39ff7a" font-size="11" font-family="Space Mono">H₂O output 💧</text>
+
+        <rect x="450" y="60" width="130" height="90" rx="10" fill="#1a0a2e" stroke="#bf5af2" stroke-width="2"/>
+        <text x="515" y="95"  text-anchor="middle" fill="#bf5af2" font-size="13" font-family="Syne,sans-serif" font-weight="700">LOAD</text>
+        <text x="515" y="112" text-anchor="middle" fill="#d7bde2" font-size="10" font-family="Space Mono">Motor/Device</text>
+        <text x="515" y="130" text-anchor="middle" fill="#d7bde2" font-size="10" font-family="Space Mono">Electricity!</text>
+        <text x="515" y="148" text-anchor="middle" fill="#ffd60a" font-size="18">⚡</text>
+
+        <path d="M110 30 L110 10 L515 10 L515 60" fill="none" stroke="#bf5af2" stroke-width="2.5"/>
+        <path d="M324 30 L324 10" fill="none" stroke="#bf5af2" stroke-width="2.5"/>
+        <circle r="5" fill="#ffd60a" opacity="0.9">
+          <animateMotion dur="2s" repeatCount="indefinite" path="M110,30 L110,10 L515,10 L515,60"/>
+        </circle>
+        <circle r="5" fill="#ffd60a" opacity="0.9">
+          <animateMotion dur="2s" begin="1s" repeatCount="indefinite" path="M110,30 L110,10 L515,10 L515,60"/>
+        </circle>
+        <text x="310" y="8" text-anchor="middle" fill="#ffd60a" font-size="9" font-family="Space Mono">e⁻ flow (external circuit)</text>
+
+        <path d="M515 150 L515 210 L110 210 L110 180" fill="none" stroke="#bf5af2" stroke-width="2.5"/>
+        <path d="M324 180 L324 210" fill="none" stroke="#bf5af2" stroke-width="2.5"/>
+
+        <text x="8" y="60" fill="#00e5ff" font-size="10" font-family="Space Mono">H₂ in</text>
+        <text x="408" y="80" fill="#ff6b35" font-size="10" font-family="Space Mono">O₂ in</text>
+
+        <rect x="450" y="165" width="260" height="40" rx="6" fill="rgba(57,255,122,0.08)" stroke="#39ff7a" stroke-width="1"/>
+        <text x="580" y="182" text-anchor="middle" fill="#39ff7a" font-size="10" font-family="Space Mono" font-weight="700">OVERALL: 2H₂ + O₂ → 2H₂O</text>
+        <text x="580" y="198" text-anchor="middle" fill="#39ff7a" font-size="9" font-family="Space Mono">Only byproduct = Pure Water ✓</text>
+      </svg>
+      <p class="diag-caption">FIG 4.1 — HYDROGEN PEM FUEL CELL · ANIMATED ELECTRON FLOW</p>
     </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This is a <strong>cross-section of a PEM (Proton Exchange Membrane) hydrogen fuel cell</strong> — the type used in cars like Toyota Mirai. It works like a battery that never dies, as long as you supply H₂ and O₂.</p>
+
+      <h4>The 3 Main Compartments (Left → Right)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:#00e5ff"></span><span><strong>Blue Box (Anode −):</strong> Where H₂ enters and splits into H⁺ + e⁻</span></div>
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:#00e5ff"></span><span><strong>Cyan Wall (PEM):</strong> Special membrane (Nafion®) that ONLY lets H⁺ pass</span></div>
+        <div class="legend-item" style="border-color:#ff6b35"><span class="dot" style="background:#ff6b35"></span><span><strong>Red Box (Cathode +):</strong> Where O₂ meets H⁺ + e⁻ → forms water</span></div>
+        <div class="legend-item" style="border-color:#bf5af2"><span class="dot" style="background:#bf5af2"></span><span><strong>Purple Box (Load):</strong> Motor/device powered by electricity</span></div>
+      </div>
+
+      <h4>Two Different Paths — The Key Trick!</h4>
+      <p>This is the genius of fuel cells: H₂ splits into H⁺ and e⁻, then they take <strong>SEPARATE PATHS</strong> to reach the cathode:</p>
+      <p>🟡 <strong>Yellow dots crossing the cyan membrane</strong> = Protons (H⁺) taking the short cut through PEM<br>
+      🟡 <strong>Yellow dots traveling on the top purple wire</strong> = Electrons (e⁻) taking the LONG way around through the external circuit — this electron flow IS the electricity!<br>
+      💧 <strong>Green water droplet</strong> at the bottom of cathode = The only waste product (pure water)</p>
+
+      <div class="read-flow">
+        ▶ FLOW: H₂ enters left → splits → H⁺ goes THROUGH membrane | e⁻ goes AROUND through wire (powers motor) → both meet O₂ on right → H₂O drops out
+      </div>
     </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">pre-filled stack</span>
-    <span class="chip">top-- on pop</span>
-    <span class="chip">isempty() guard</span>
-    <span class="chip">-1 sentinel return</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
-#define SIZE 5
 
-int top = 4;
-int STK[SIZE] = {10, 20, 30, 50, 40};
-
-int isempty() { return (top == -1); }
-
-int pop()
-{
-    if (isempty()) { printf("----- Stack is EMPTY -----\n"); return -1; }
-    return STK[top--];
-}
-
-void display()
-{
-    if (isempty()) { printf("----- Stack is EMPTY -----\n"); return; }
-    printf("Stack contents (top to bottom):\n");
-    for (int i = top; i >= 0; i--) printf("%d\n", STK[i]);
-}
-
-int main()
-{
-    int choice, val;
-    do {
-        printf("\n1. Pop\n2. Display\n3. Exit\nEnter your choice: ");
-        if (scanf("%d", &choice) != 1) return 0;
-        switch (choice)
-        {
-            case 1: val = pop(); if (val != -1) printf("Popped value = %d\n", val); break;
-            case 2: display(); break;
-            case 3: printf("Exiting.\n"); break;
-            default: printf("Invalid choice.\n");
-        }
-    } while (choice != 3);
-    return 0;
-}</code></pre>
+    <p class="sec-label">Applications</p>
+    <ul class="bullet-list">
+      <li><span class="highlight">Fuel Cell Vehicles (FCV)</span> — Toyota Mirai, Honda Clarity; zero-emission transport.</li>
+      <li>Stationary power generation for buildings, hospitals, data centers.</li>
+      <li>Portable power for military equipment and remote locations.</li>
+      <li>Space missions — NASA Apollo/Space Shuttle used alkaline fuel cells.</li>
+      <li>Backup power for telecom towers and critical infrastructure.</li>
+    </ul>
+    <div class="key-box">TYPES: PEM (Proton Exchange Membrane, ~80°C, Nafion) | Alkaline (KOH electrolyte) | Phosphoric Acid | Molten Carbonate | Solid Oxide (high temp). PEM most common for vehicles.</div>
   </div>
 </div>
 
-<!-- CARD 6 -->
-<div class="code-card" id="card6">
-  <div class="card-head">
-    <div class="num-badge">06</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-queue">Queue</div>
-      <div class="card-title">Enqueue using array implementation of Linear Queue</div>
+<!-- ══════════════════════════════════════ Q6 ACTIVATED SLUDGE -->
+<div class="q-card c2" id="q6">
+  <div class="q-header">
+    <div class="q-num">06</div>
+    <div class="q-title">Activated Sludge Process</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text"><span class="highlight">Activated sludge</span> is a biological secondary wastewater treatment method using a mixed culture of aerobic microorganisms to break down organic matter. The sludge is "activated" because it contains a high population of living bacteria recycled to treat fresh influent continuously.</p>
+
+    <p class="sec-label">Process Flow Diagram — Animated</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 200" width="720" height="200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5"   y="70" width="80"  height="60" rx="8" fill="#0d2137" stroke="#1e8bc3" stroke-width="1.5"/>
+        <text x="45"  y="98"  text-anchor="middle" fill="#7ecef4" font-size="10" font-family="Space Mono">RAW</text>
+        <text x="45"  y="112" text-anchor="middle" fill="#7ecef4" font-size="10" font-family="Space Mono">SEWAGE</text>
+        <rect x="110" y="60" width="110" height="80" rx="8" fill="#0a2020" stroke="#00e5ff" stroke-width="1.5"/>
+        <text x="165" y="90"  text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono">PRIMARY</text>
+        <text x="165" y="105" text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono">CLARIFIER</text>
+        <text x="165" y="120" text-anchor="middle" fill="#7ecef4" font-size="9" font-family="Space Mono">Settle solids</text>
+        <rect x="130" y="135" width="70" height="12" rx="3" fill="rgba(139,90,0,0.5)"/>
+        <text x="165" y="145" text-anchor="middle" fill="#cc7700" font-size="8" font-family="Space Mono">primary sludge</text>
+        <rect x="255" y="50" width="140" height="100" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="2"/>
+        <text x="325" y="80"  text-anchor="middle" fill="#39ff7a" font-size="11" font-family="Space Mono" font-weight="700">AERATION</text>
+        <text x="325" y="95"  text-anchor="middle" fill="#39ff7a" font-size="11" font-family="Space Mono" font-weight="700">TANK</text>
+        <text x="325" y="113" text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">Aerobic bacteria</text>
+        <text x="325" y="127" text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">degrade BOD</text>
+        <circle cx="270" cy="140" r="4" fill="rgba(0,229,255,0.5)"><animate attributeName="cy" values="140;50;140" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite"/></circle>
+        <circle cx="295" cy="140" r="3" fill="rgba(0,229,255,0.5)"><animate attributeName="cy" values="140;50;140" dur="1.6s" repeatCount="indefinite" begin="0.4s"/><animate attributeName="opacity" values="1;0;1" dur="1.6s" repeatCount="indefinite" begin="0.4s"/></circle>
+        <circle cx="325" cy="140" r="5" fill="rgba(0,229,255,0.5)"><animate attributeName="cy" values="140;50;140" dur="2.2s" repeatCount="indefinite" begin="0.8s"/><animate attributeName="opacity" values="1;0;1" dur="2.2s" repeatCount="indefinite" begin="0.8s"/></circle>
+        <circle cx="355" cy="140" r="3" fill="rgba(0,229,255,0.5)"><animate attributeName="cy" values="140;50;140" dur="1.8s" repeatCount="indefinite" begin="1.2s"/><animate attributeName="opacity" values="1;0;1" dur="1.8s" repeatCount="indefinite" begin="1.2s"/></circle>
+        <circle cx="375" cy="140" r="4" fill="rgba(0,229,255,0.5)"><animate attributeName="cy" values="140;50;140" dur="2s" repeatCount="indefinite" begin="0.2s"/><animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" begin="0.2s"/></circle>
+        <rect x="290" y="165" width="80" height="28" rx="14" fill="#0d3020" stroke="#39ff7a" stroke-width="1"/>
+        <text x="330" y="180" text-anchor="middle" fill="#39ff7a" font-size="9" font-family="Space Mono">AIR BLOWER</text>
+        <line x1="325" y1="165" x2="325" y2="150" stroke="#39ff7a" stroke-width="1.5" stroke-dasharray="4 3" class="anim-flow"/>
+
+        <rect x="430" y="60" width="120" height="80" rx="8" fill="#0d1a2d" stroke="#00e5ff" stroke-width="1.5"/>
+        <text x="490" y="90"  text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono">SECONDARY</text>
+        <text x="490" y="105" text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono">CLARIFIER</text>
+        <text x="490" y="120" text-anchor="middle" fill="#7ecef4" font-size="9" font-family="Space Mono">Sludge settles</text>
+
+        <rect x="585" y="70" width="110" height="60" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="2"/>
+        <text x="640" y="96"  text-anchor="middle" fill="#39ff7a" font-size="10" font-family="Space Mono" font-weight="700">TREATED</text>
+        <text x="640" y="110" text-anchor="middle" fill="#39ff7a" font-size="10" font-family="Space Mono" font-weight="700">EFFLUENT</text>
+        <text x="640" y="124" text-anchor="middle" fill="#aef5c5" font-size="8" font-family="Space Mono">85-95% BOD removed</text>
+
+        <line x1="85"  y1="100" x2="108" y2="100" stroke="#00e5ff" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+        <line x1="220" y1="100" x2="253" y2="100" stroke="#00e5ff" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+        <line x1="395" y1="100" x2="428" y2="100" stroke="#00e5ff" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+        <line x1="550" y1="100" x2="583" y2="100" stroke="#39ff7a" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+
+        <path d="M490,140 L490,185 L325,185 L325,165" fill="none" stroke="#ff6b35" stroke-width="2" stroke-dasharray="7 4" class="anim-flow"/>
+        <text x="407" y="198" text-anchor="middle" fill="#ff6b35" font-size="9" font-family="Space Mono">← RETURN ACTIVATED SLUDGE (RAS) 20-30%</text>
+        <line x1="490" y1="155" x2="550" y2="155" stroke="#888" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="555" y="158" fill="#888" font-size="8" font-family="Space Mono">waste sludge →</text>
+      </svg>
+      <p class="diag-caption">FIG 6.1 — ACTIVATED SLUDGE PROCESS FLOW · ANIMATED</p>
     </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This is the <strong>step-by-step journey of dirty sewage</strong> through a wastewater treatment plant. Sewage enters from the far left as black/brown water and exits on the far right as 85–95% cleaned water.</p>
+
+      <h4>The 5 Stages (Left → Right)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#1e8bc3"><span class="dot" style="background:#1e8bc3"></span><span><strong>① Raw Sewage (Blue):</strong> Untreated incoming wastewater</span></div>
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:#00e5ff"></span><span><strong>② Primary Clarifier:</strong> Heavy junk settles to bottom (brown sludge bar)</span></div>
+        <div class="legend-item" style="border-color:#39ff7a"><span class="dot" style="background:#39ff7a"></span><span><strong>③ Aeration Tank (BIG green):</strong> The heart — bacteria + air bubbles</span></div>
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:#00e5ff"></span><span><strong>④ Secondary Clarifier:</strong> Dead bacteria/sludge settles down</span></div>
+        <div class="legend-item" style="border-color:#39ff7a"><span class="dot" style="background:#39ff7a"></span><span><strong>⑤ Treated Effluent:</strong> Clean water released to river</span></div>
+      </div>
+
+      <h4>Why Are Bubbles Rising in the Aeration Tank?</h4>
+      <p>The cyan bubbles floating up in the green aeration tank represent <strong>oxygen pumped by the AIR BLOWER (rounded box below)</strong>. Aerobic bacteria need O₂ to "eat" the organic pollution. More bubbles = healthier bacteria = better cleaning.</p>
+
+      <h4>The Orange Recycling Loop (Bottom)</h4>
+      <p>The <strong>orange dashed arrow underneath</strong> shows Return Activated Sludge (RAS) — 20–30% of bacteria from clarifier 2 is sent BACK to the aeration tank. This keeps the bacterial population high and active — that's why it's called "ACTIVATED" sludge!</p>
+
+      <div class="read-flow">
+        ▶ FLOW: Sewage → Settle solids → Bacteria eat pollution (with air) → Settle bacteria → Clean water out | RAS loops bacteria back
+      </div>
     </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">front & rear pointers</span>
-    <span class="chip">rear==SIZE-1 full</span>
-    <span class="chip">front>rear empty</span>
-    <span class="chip">FIFO order</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
-#define SIZE 5
 
-int rear = -1, front = 0;
-int que[SIZE];
-
-int isquefull()  { return (rear == SIZE - 1); }
-int isqueempty() { return (front > rear); }
-
-void enqueue(int val)
-{
-    if (isquefull()) printf("----- Queue is FULL -----\n");
-    else { que[++rear] = val; printf("Inserted %d into queue.\n", val); }
-}
-
-void display()
-{
-    if (isqueempty()) { printf("----- Queue is EMPTY -----\n"); return; }
-    printf("Queue contents:\n");
-    for (int i = front; i <= rear; i++) printf("%d\n", que[i]);
-}
-
-int main()
-{
-    int choice, val;
-    do {
-        printf("\n1. Enqueue\n2. Display\n3. Exit\nEnter your choice: ");
-        if (scanf("%d", &choice) != 1) return 0;
-        switch (choice)
-        {
-            case 1: printf("Enter value: "); scanf("%d", &val); enqueue(val); break;
-            case 2: display(); break;
-            case 3: printf("Exiting.\n"); break;
-            default: printf("Invalid choice.\n");
-        }
-    } while (choice != 3);
-    return 0;
-}</code></pre>
+    <p class="sec-label">Working — Step by Step</p>
+    <ul class="bullet-list">
+      <li><span class="highlight">Primary Clarifier:</span> Incoming sewage settles; heavy solids sink as primary sludge.</li>
+      <li><span class="highlight">Aeration Tank:</span> Effluent mixed with activated sludge + continuous air supply. Aerobic bacteria oxidize organic matter (BOD reduced 85–95%). DO maintained > 2 mg/L.</li>
+      <li><span class="highlight">Secondary Clarifier:</span> Mixed liquor settles; clear treated effluent decanted from top.</li>
+      <li><span class="highlight">Return Activated Sludge (RAS):</span> 20–30% of settled sludge recycled to aeration tank to maintain MLSS (2000–4000 mg/L).</li>
+      <li><span class="highlight">Waste Sludge:</span> Excess sludge removed and sent for digestion/disposal.</li>
+    </ul>
+    <div class="key-box">KEY PARAMETERS: MLSS (Mixed Liquor Suspended Solids) | SRT (Sludge Retention Time) | F/M ratio | DO > 2 mg/L | HRT (Hydraulic Retention Time: 4-8 hours)</div>
   </div>
 </div>
 
-<!-- CARD 7 -->
-<div class="code-card" id="card7">
-  <div class="card-head">
-    <div class="num-badge">07</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-queue">Queue</div>
-      <div class="card-title">Dequeue using array implementation of Linear Queue</div>
+<!-- ══════════════════════════════════════ Q7 WASTE HIERARCHY -->
+<div class="q-card c5" id="q7">
+  <div class="q-header">
+    <div class="q-num">07</div>
+    <div class="q-title">Waste Hierarchy Pyramid</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text">The <span class="highlight">Waste Management Hierarchy</span> is a framework prioritizing waste management strategies from the most preferred (environmentally beneficial) to least preferred, represented as a pyramid with 5 levels.</p>
+
+    <p class="sec-label">Animated Pyramid Diagram</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 280" width="720" height="280" xmlns="http://www.w3.org/2000/svg">
+        <text x="660" y="70"  fill="#39ff7a" font-size="12" font-family="Syne,sans-serif" font-weight="700">BEST ↑</text>
+        <text x="660" y="250" fill="#ff6b35" font-size="12" font-family="Syne,sans-serif" font-weight="700">WORST ↓</text>
+        <line x1="655" y1="80" x2="655" y2="240" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+        <polygon points="360,10 280,60 440,60" fill="#1a5276" stroke="#2e86c1" stroke-width="1.5"/>
+        <text x="360" y="44" text-anchor="middle" fill="#aed6f1" font-size="12" font-family="Syne,sans-serif" font-weight="700">PREVENTION</text>
+        <text x="500" y="40" fill="#7ecef4" font-size="10" font-family="DM Sans,sans-serif">→ Avoid generating waste at source</text>
+
+        <polygon points="280,65 225,115 495,115 440,65" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+        <text x="360" y="97" text-anchor="middle" fill="#fff" font-size="12" font-family="Syne,sans-serif" font-weight="700">REUSE</text>
+        <text x="500" y="93" fill="#7ecef4" font-size="10" font-family="DM Sans,sans-serif">→ Use products again without reprocessing</text>
+
+        <polygon points="225,120 165,170 555,170 495,120" fill="#27ae60" stroke="#1e8449" stroke-width="1.5"/>
+        <text x="360" y="152" text-anchor="middle" fill="#fff" font-size="13" font-family="Syne,sans-serif" font-weight="700">RECYCLE</text>
+        <text x="560" y="150" fill="#7ecef4" font-size="10" font-family="DM Sans,sans-serif">→ Convert waste into new raw materials</text>
+
+        <polygon points="165,175 100,225 620,225 555,175" fill="#e67e22" stroke="#ca6f1e" stroke-width="1.5"/>
+        <text x="360" y="208" text-anchor="middle" fill="#fff" font-size="13" font-family="Syne,sans-serif" font-weight="700">RECOVERY</text>
+        <text x="625" y="208" fill="#7ecef4" font-size="10" font-family="DM Sans,sans-serif">→ Energy from waste</text>
+
+        <polygon points="100,230 50,280 670,280 620,230" fill="#c0392b" stroke="#922b21" stroke-width="1.5"/>
+        <text x="360" y="262" text-anchor="middle" fill="#fff" font-size="13" font-family="Syne,sans-serif" font-weight="700">DISPOSAL</text>
+        <text x="675" y="262" fill="#7ecef4" font-size="10" font-family="DM Sans,sans-serif">→ Last resort: Landfill</text>
+
+        <text x="360" y="295" text-anchor="middle" fill="#555" font-size="9" font-family="Space Mono">↑ Most preferred (top) to Least preferred (bottom) ↓</text>
+      </svg>
+      <p class="diag-caption">FIG 7.1 — WASTE MANAGEMENT HIERARCHY PYRAMID</p>
     </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This <strong>inverted-priority pyramid</strong> ranks waste-handling strategies from BEST (top, narrow) to WORST (bottom, wide). The shape is deliberate — the narrow top represents the most desirable but least-used method, while the wide base represents the easiest but worst method.</p>
+
+      <h4>Color Meaning (Top → Bottom)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#2e86c1"><span class="dot" style="background:#1a5276"></span><span><strong>Dark Blue (apex):</strong> Prevention — don't make waste at all</span></div>
+        <div class="legend-item" style="border-color:#16a085"><span class="dot" style="background:#1abc9c"></span><span><strong>Teal:</strong> Reuse — use it again as-is</span></div>
+        <div class="legend-item" style="border-color:#1e8449"><span class="dot" style="background:#27ae60"></span><span><strong>Green:</strong> Recycle — process into new material</span></div>
+        <div class="legend-item" style="border-color:#ca6f1e"><span class="dot" style="background:#e67e22"></span><span><strong>Orange:</strong> Recovery — burn for energy</span></div>
+        <div class="legend-item" style="border-color:#922b21"><span class="dot" style="background:#c0392b"></span><span><strong>Red (base):</strong> Disposal — landfill (worst option)</span></div>
+      </div>
+
+      <h4>Why is the Shape Significant?</h4>
+      <p>Notice the <strong>color gradient from cool (blue/green) to warm (orange/red)</strong> — this is a visual warning. Cool = environmentally safe; warm/red = harmful. Also, the <strong>arrows on the right</strong> (BEST ↑ vs WORST ↓) make it crystal clear that we should aim for the TOP of the pyramid.</p>
+
+      <div class="read-flow">
+        ▶ MEMORIZE: PREVENTION > REUSE > RECYCLE > RECOVERY > DISPOSAL (P-R-R-R-D) — Always aim higher in the pyramid
+      </div>
     </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">pre-filled queue</span>
-    <span class="chip">front++ on dequeue</span>
-    <span class="chip">-1 sentinel</span>
-    <span class="chip">rear=4 initial</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
-#define SIZE 5
 
-int rear = 4, front = 0;
-int que[SIZE] = {100, 200, 300, 400, 500};
-
-int isqueempty() { return (front > rear); }
-
-int dequeue()
-{
-    if (isqueempty()) { printf("----- Queue is EMPTY -----\n"); return -1; }
-    return que[front++];
-}
-
-void display()
-{
-    if (isqueempty()) { printf("----- Queue is EMPTY -----\n"); return; }
-    printf("Queue contents:\n");
-    for (int i = front; i <= rear; i++) printf("%d\n", que[i]);
-}
-
-int main()
-{
-    int choice, val;
-    do {
-        printf("\n1. Dequeue\n2. Display\n3. Exit\nEnter your choice: ");
-        if (scanf("%d", &choice) != 1) return 0;
-        switch (choice)
-        {
-            case 1: val = dequeue(); if (val != -1) printf("Dequeued value = %d\n", val); break;
-            case 2: display(); break;
-            case 3: printf("Exiting.\n"); break;
-            default: printf("Invalid choice.\n");
-        }
-    } while (choice != 3);
-    return 0;
-}</code></pre>
+    <p class="sec-label">Explanation of Each Level</p>
+    <table class="rxn-table">
+      <tr><th>Level</th><th>Strategy</th><th>Explanation</th><th>Example</th></tr>
+      <tr><td>1 (Best)</td><td class="rxn-eq">Prevention</td><td class="rxn-note">Avoid generating waste in the first place</td><td class="rxn-note">Buying only what's needed, eco-design, minimal packaging</td></tr>
+      <tr><td>2</td><td class="rxn-eq">Reuse</td><td class="rxn-note">Use products/materials again without processing</td><td class="rxn-note">Refillable bottles, second-hand goods, reusable bags</td></tr>
+      <tr><td>3</td><td class="rxn-eq">Recycle</td><td class="rxn-note">Reprocess materials into new products</td><td class="rxn-note">Paper, glass, plastic, metal recycling</td></tr>
+      <tr><td>4</td><td class="rxn-eq">Recovery</td><td class="rxn-note">Extract energy or value from waste</td><td class="rxn-note">Incineration with energy recovery, biogas from MSW</td></tr>
+      <tr><td>5 (Worst)</td><td class="rxn-eq">Disposal</td><td class="rxn-note">Final disposal as last resort</td><td class="rxn-note">Sanitary landfill, secure landfill</td></tr>
+    </table>
+    <div class="key-box">3Rs: Reduce (Prevention) → Reuse → Recycle. These are the first three levels. The goal is to maximize diversion from disposal.</div>
   </div>
 </div>
 
-<!-- CARD 8 -->
-<div class="code-card" id="card8">
-  <div class="card-head">
-    <div class="num-badge">08</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-queue">Circular Queue</div>
-      <div class="card-title">Enqueue on a circular queue using array</div>
+<!-- ══════════════════════════════════════ Q8 CATALYTIC CONVERTER -->
+<div class="q-card c4" id="q8">
+  <div class="q-header">
+    <div class="q-num">08</div>
+    <div class="q-title">Catalytic Converter</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text">A <span class="highlight">catalytic converter</span> (three-way catalytic converter, TWC) is fitted in vehicle exhausts to convert toxic pollutants — CO, HCs, NOₓ — into harmless gases (CO₂, N₂, H₂O) using precious metal catalysts on a honeycomb ceramic substrate.</p>
+
+    <p class="sec-label">Construction & Working — Animated</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 180" width="720" height="180" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="60" width="90" height="60" rx="6" fill="#1a1a1a" stroke="#666" stroke-width="1.5"/>
+        <text x="50" y="84"  text-anchor="middle" fill="#ff6b35" font-size="9" font-family="Space Mono">EXHAUST</text>
+        <text x="50" y="98"  text-anchor="middle" fill="#ff6b35" font-size="9" font-family="Space Mono">GASES IN</text>
+        <text x="50" y="113" text-anchor="middle" fill="#888" font-size="8"  font-family="Space Mono">CO, HC, NOₓ</text>
+        <circle cx="35" cy="76" r="3" fill="#ff6b35" opacity="0.8">
+          <animate attributeName="cx" values="35;95;140;180" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0.8;0.5;0" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="35" cy="90" r="3" fill="#ff0000" opacity="0.8">
+          <animate attributeName="cx" values="35;95;140;180" dur="1.8s" repeatCount="indefinite" begin="0.6s"/>
+          <animate attributeName="opacity" values="0.8;0.8;0.5;0" dur="1.8s" repeatCount="indefinite" begin="0.6s"/>
+        </circle>
+        <circle cx="35" cy="104" r="3" fill="#ff6b35" opacity="0.8">
+          <animate attributeName="cx" values="35;95;140;180" dur="2.2s" repeatCount="indefinite" begin="1.2s"/>
+          <animate attributeName="opacity" values="0.8;0.8;0.5;0" dur="2.2s" repeatCount="indefinite" begin="1.2s"/>
+        </circle>
+
+        <line x1="95" y1="90" x2="125" y2="90" stroke="#888" stroke-width="8" stroke-linecap="round"/>
+
+        <rect x="125" y="20" width="360" height="140" rx="14" fill="#111" stroke="#e67e22" stroke-width="2"/>
+        <text x="305" y="45"  text-anchor="middle" fill="#e67e22" font-size="12" font-family="Syne,sans-serif" font-weight="700">CATALYTIC CONVERTER</text>
+        <text x="175" y="68"  fill="#777" font-size="9" font-family="Space Mono">Ceramic Substrate (Cordierite)</text>
+        <text x="175" y="82"  fill="#aaa" font-size="9" font-family="Space Mono">Washcoat: Al₂O₃</text>
+        <text x="175" y="96"  fill="#ffd60a" font-size="9" font-family="Space Mono">Catalysts: Pt, Pd, Rh</text>
+        <g opacity="0.7">
+          <rect x="145" y="105" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="165" y="105" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="185" y="105" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="205" y="105" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="225" y="105" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="245" y="105" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="265" y="105" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="285" y="105" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="145" y="125" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="165" y="125" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="185" y="125" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="205" y="125" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="225" y="125" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="245" y="125" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="265" y="125" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+          <rect x="285" y="125" width="18" height="18" rx="2" fill="#2a1000" stroke="#e67e22" stroke-width="0.8"/>
+        </g>
+        <text x="230" y="168" text-anchor="middle" fill="#666" font-size="8" font-family="Space Mono">honeycomb (thousands of cells, ↑ surface area)</text>
+
+        <text x="370" y="68"  fill="#00e5ff" font-size="9" font-family="Space Mono">Rh: 2NO → N₂+O₂</text>
+        <text x="370" y="82"  fill="#00e5ff" font-size="9" font-family="Space Mono">Pt/Pd: 2CO+O₂ → 2CO₂</text>
+        <text x="370" y="96"  fill="#00e5ff" font-size="9" font-family="Space Mono">Pt/Pd: HC+O₂ → CO₂+H₂O</text>
+        <text x="370" y="115" fill="#39ff7a" font-size="9" font-family="Space Mono">Temp: 400-900°C</text>
+        <text x="370" y="129" fill="#39ff7a" font-size="9" font-family="Space Mono">Eff: >90% all 3 pollutants</text>
+
+        <line x1="485" y1="90" x2="515" y2="90" stroke="#39ff7a" stroke-width="8" stroke-linecap="round"/>
+
+        <rect x="515" y="60" width="100" height="60" rx="6" fill="#062d15" stroke="#39ff7a" stroke-width="1.5"/>
+        <text x="565" y="84"  text-anchor="middle" fill="#39ff7a" font-size="9" font-family="Space Mono">CLEAN</text>
+        <text x="565" y="98"  text-anchor="middle" fill="#39ff7a" font-size="9" font-family="Space Mono">EXHAUST</text>
+        <text x="565" y="112" text-anchor="middle" fill="#aef5c5" font-size="8" font-family="Space Mono">CO₂,N₂,H₂O</text>
+        <circle cx="540" cy="80" r="3" fill="#39ff7a" opacity="0">
+          <animate attributeName="cx" values="515;610" dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+
+        <text x="620" y="80" fill="#888" font-size="9" font-family="Space Mono">Stainless</text>
+        <text x="620" y="92" fill="#888" font-size="9" font-family="Space Mono">steel housing</text>
+        <rect x="620" y="100" width="90" height="28" rx="4" fill="#1a1a00" stroke="#ffd60a" stroke-width="1"/>
+        <text x="665" y="112" text-anchor="middle" fill="#ffd60a" font-size="8" font-family="Space Mono">λ O₂ Sensor</text>
+        <text x="665" y="124" text-anchor="middle" fill="#888" font-size="7" font-family="Space Mono">controls A/F ratio</text>
+      </svg>
+      <p class="diag-caption">FIG 8.1 — THREE-WAY CATALYTIC CONVERTER · CROSS-SECTION</p>
     </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This is a <strong>cross-section cut-away view</strong> of a Three-Way Catalytic Converter (TWC) — the device welded under every modern car between the engine and tailpipe. It transforms <em>poisonous</em> exhaust into <em>harmless</em> gases.</p>
+
+      <h4>Components (Left → Right)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#ff6b35"><span class="dot" style="background:#ff6b35"></span><span><strong>Left Box (Dark):</strong> Toxic exhaust IN — CO, HC, NOₓ (red dots)</span></div>
+        <div class="legend-item" style="border-color:#e67e22"><span class="dot" style="background:#e67e22"></span><span><strong>Big Orange Box:</strong> The converter body (stainless steel housing)</span></div>
+        <div class="legend-item" style="border-color:#e67e22"><span class="dot" style="background:#2a1000"></span><span><strong>Honeycomb Grid (16 squares):</strong> Ceramic structure to maximize surface area</span></div>
+        <div class="legend-item" style="border-color:#ffd60a"><span class="dot" style="background:#ffd60a"></span><span><strong>Yellow text inside:</strong> The 3 precious metal catalysts (Pt, Pd, Rh)</span></div>
+        <div class="legend-item" style="border-color:#39ff7a"><span class="dot" style="background:#39ff7a"></span><span><strong>Right Box (Green):</strong> Clean exhaust OUT — CO₂, N₂, H₂O</span></div>
+        <div class="legend-item" style="border-color:#ffd60a"><span class="dot" style="background:#ffd60a"></span><span><strong>λ Sensor (small box):</strong> Monitors O₂ to optimize fuel-air ratio</span></div>
+      </div>
+
+      <h4>Why the Honeycomb Pattern?</h4>
+      <p>Those 16 small dark squares represent <strong>thousands of tiny parallel tunnels</strong> in real converters. This honeycomb shape gives a massive surface area (~equivalent to a football field!) coated with precious metals, so exhaust gases have maximum contact with catalysts as they pass through.</p>
+
+      <h4>Watch the Color Change</h4>
+      <p>The animated dots show the magic: <strong>RED/ORANGE toxic dots enter from the left</strong>, disappear inside the converter (reacting with catalysts), and <strong>GREEN clean dots emerge from the right</strong>. That's the conversion happening in real-time!</p>
+
+      <div class="read-flow">
+        ▶ TRANSFORMATION: Toxic CO + HC + NOₓ → [Pt/Pd/Rh catalysts at 400–900°C] → Harmless CO₂ + N₂ + H₂O
+      </div>
     </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">(rear+1)%MAX full</span>
-    <span class="chip">front=rear=-1 empty</span>
-    <span class="chip">modulo wrap-around</span>
-    <span class="chip">circular traversal</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
-#define MAX 6
 
-int queue[MAX];
-int front = -1, rear = -1;
-
-void enqueue(int element)
-{
-    if ((rear + 1) % MAX == front)
-        printf("Queue is FULL\n");
-    else if (front == -1 && rear == -1)
-    {
-        front = rear = 0;
-        queue[rear] = element;
-    }
-    else
-    {
-        rear = (rear + 1) % MAX;
-        queue[rear] = element;
-    }
-}
-
-void display()
-{
-    if (front == -1 && rear == -1) { printf("Queue is EMPTY\n"); return; }
-    int i = front;
-    printf("Queue elements:\n");
-    while (1)
-    {
-        printf("%d\n", queue[i]);
-        if (i == rear) break;
-        i = (i + 1) % MAX;
-    }
-}
-
-int main()
-{
-    int choice, x;
-    do {
-        printf("\n1. Enqueue\n2. Display\n3. Exit\nEnter choice: ");
-        if (scanf("%d", &choice) != 1) return 0;
-        switch (choice)
-        {
-            case 1: printf("Enter element: "); scanf("%d", &x); enqueue(x); break;
-            case 2: display(); break;
-            case 3: printf("Exiting...\n"); break;
-            default: printf("Invalid choice\n");
-        }
-    } while (choice != 3);
-    return 0;
-}</code></pre>
+    <p class="sec-label">Chemical Reactions</p>
+    <table class="rxn-table">
+      <tr><th>Catalyst</th><th>Type</th><th>Reaction</th></tr>
+      <tr><td>Rhodium (Rh)</td><td>Reduction</td><td class="rxn-eq">2NO → N₂ + O₂</td></tr>
+      <tr><td>Platinum (Pt)</td><td>Oxidation</td><td class="rxn-eq">2CO + O₂ → 2CO₂</td></tr>
+      <tr><td>Palladium (Pd)</td><td>Oxidation</td><td class="rxn-eq">C₈H₁₈ + 12.5O₂ → 8CO₂ + 9H₂O</td></tr>
+      <tr><td>Rh + Pt</td><td>Dual</td><td class="rxn-eq">2NO + 2CO → N₂ + 2CO₂</td></tr>
+    </table>
+    <div class="key-box">LIGHT-OFF TEMP: ~250–300°C. Cars pollute most during cold start (first 1–2 min) before catalyst heats up. This is why warm engine + efficient catalyst = less pollution.</div>
   </div>
 </div>
 
-<!-- CARD 9 -->
-<div class="code-card" id="card9">
-  <div class="card-head">
-    <div class="num-badge">09</div>
-    <div class="card-title-block">
-      <div class="topic-tag tag-queue">Circular Queue</div>
-      <div class="card-title">Dequeue on a circular queue using array</div>
+<!-- ════════════════════════════════════════ Q9 WIND ENERGY -->
+<div class="q-card c1" id="q9">
+  <div class="q-header">
+    <div class="q-num">09</div>
+    <div class="q-title">Wind Energy</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text">Wind energy converts the <span class="highlight">kinetic energy of wind</span> into electrical energy using wind turbines. Power output: P ∝ v³ (cube of wind speed) × A (swept area). Clean, renewable, zero emission during operation.</p>
+
+    <p class="sec-label">Animated Wind Turbine</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 220" width="720" height="220" xmlns="http://www.w3.org/2000/svg">
+        <rect width="720" height="220" fill="#050a14"/>
+        <rect y="185" width="720" height="35" fill="#0a1a0a"/>
+        <line x1="5"  y1="80"  x2="140" y2="80"  stroke="rgba(0,229,255,0.3)" stroke-width="2" stroke-dasharray="12 8"><animate attributeName="x1" values="5;-30;5" dur="1.5s" repeatCount="indefinite"/></line>
+        <line x1="5"  y1="100" x2="140" y2="100" stroke="rgba(0,229,255,0.25)" stroke-width="1.5" stroke-dasharray="10 7"><animate attributeName="x1" values="5;-20;5" dur="2s" repeatCount="indefinite"/></line>
+        <line x1="5"  y1="120" x2="140" y2="120" stroke="rgba(0,229,255,0.2)" stroke-width="1" stroke-dasharray="8 6"><animate attributeName="x1" values="5;-25;5" dur="1.8s" repeatCount="indefinite"/></line>
+        <text x="30" y="65" fill="rgba(0,229,255,0.5)" font-size="11" font-family="Space Mono">WIND →</text>
+
+        <polygon points="200,185 215,185 210,50 205,50" fill="#2c3e50" stroke="#3d566e" stroke-width="1"/>
+        <circle cx="208" cy="50" r="10" fill="#555" stroke="#888" stroke-width="1.5"/>
+        <g id="turbine-blades" style="transform-origin: 208px 50px; animation: spin-slow 3s linear infinite;">
+          <ellipse cx="208" cy="10" rx="7" ry="36" fill="#1e8bc3" opacity="0.9"/>
+          <ellipse cx="177" cy="83" rx="7" ry="36" fill="#1e8bc3" opacity="0.9" transform="rotate(120 208 50)"/>
+          <ellipse cx="239" cy="83" rx="7" ry="36" fill="#1e8bc3" opacity="0.9" transform="rotate(240 208 50)"/>
+        </g>
+
+        <rect x="198" y="44" width="50" height="18" rx="4" fill="#3d566e" stroke="#7f8c8d" stroke-width="1"/>
+
+        <rect x="350" y="65" width="130" height="70" rx="10" fill="#16001a" stroke="#bf5af2" stroke-width="2"/>
+        <text x="415" y="96"  text-anchor="middle" fill="#bf5af2" font-size="12" font-family="Syne,sans-serif" font-weight="700">GENERATOR</text>
+        <text x="415" y="113" text-anchor="middle" fill="#d7bde2" font-size="10" font-family="Space Mono">AC Electricity</text>
+        <text x="415" y="128" text-anchor="middle" fill="#ffd60a" font-size="18">⚡</text>
+        <line x1="248" y1="53" x2="350" y2="100" stroke="#7f8c8d" stroke-width="6" stroke-linecap="round"/>
+        <text x="300" y="72" fill="#888" font-size="9" font-family="Space Mono" transform="rotate(-18 300 72)">Shaft / Gearbox</text>
+
+        <rect x="510" y="65" width="100" height="70" rx="10" fill="#1a0a00" stroke="#e67e22" stroke-width="2"/>
+        <text x="560" y="95"  text-anchor="middle" fill="#e67e22" font-size="11" font-family="Syne,sans-serif" font-weight="700">STEP-UP</text>
+        <text x="560" y="110" text-anchor="middle" fill="#e8c0a0" font-size="10" font-family="Space Mono">TRANSFORMER</text>
+        <text x="560" y="126" text-anchor="middle" fill="#e8c0a0" font-size="9" font-family="Space Mono">High voltage →</text>
+        <line x1="480" y1="100" x2="510" y2="100" stroke="#e67e22" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+
+        <rect x="630" y="75" width="80" height="50" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="2"/>
+        <text x="670" y="100" text-anchor="middle" fill="#39ff7a" font-size="11" font-family="Syne,sans-serif" font-weight="700">GRID</text>
+        <text x="670" y="118" text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">Power supply</text>
+        <line x1="610" y1="100" x2="630" y2="100" stroke="#39ff7a" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+
+        <text x="360" y="200" text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono">Wind KE → Rotor (mechanical) → Generator → Electrical Energy</text>
+        <text x="208" y="210" text-anchor="middle" fill="#888" font-size="9" font-family="Space Mono">Hub 70-120m high</text>
+      </svg>
+      <p class="diag-caption">FIG 9.1 — WIND TURBINE ENERGY CONVERSION · ANIMATED BLADES</p>
     </div>
-    <div class="card-actions">
-      <button class="btn btn-copy" onclick="copyCode(this)">📋 Copy</button>
-      <button class="btn btn-run" onclick="window.open('https://www.onlinegdb.com/online_c_compiler','_blank')">▶ Run</button>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This diagram shows the <strong>full energy conversion chain</strong> from invisible moving wind to electricity that powers your home. The spinning blades and flowing wind lines tell the story.</p>
+
+      <h4>The 4-Stage Energy Chain (Left → Right)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:rgba(0,229,255,0.3)"></span><span><strong>Cyan Dashed Lines (far left):</strong> Wind flowing horizontally (animated)</span></div>
+        <div class="legend-item" style="border-color:#1e8bc3"><span class="dot" style="background:#1e8bc3"></span><span><strong>Spinning Blue Blades:</strong> Capture wind's kinetic energy</span></div>
+        <div class="legend-item" style="border-color:#7f8c8d"><span class="dot" style="background:#7f8c8d"></span><span><strong>Grey Diagonal Bar:</strong> Shaft + gearbox transmits rotation</span></div>
+        <div class="legend-item" style="border-color:#bf5af2"><span class="dot" style="background:#bf5af2"></span><span><strong>Purple Box:</strong> Generator — produces AC electricity (⚡)</span></div>
+        <div class="legend-item" style="border-color:#e67e22"><span class="dot" style="background:#e67e22"></span><span><strong>Orange Box:</strong> Step-up Transformer (raises voltage)</span></div>
+        <div class="legend-item" style="border-color:#39ff7a"><span class="dot" style="background:#39ff7a"></span><span><strong>Green Box (far right):</strong> Power Grid → reaches homes</span></div>
+      </div>
+
+      <h4>Why Are the Blades Spinning?</h4>
+      <p>The CSS animation shows real turbine behavior. As <strong>cyan wind lines move from left to right</strong>, they push against the angled blades like air pushing a pinwheel. The hub (tower top) houses the gearbox + generator. Real turbines sit on <strong>70–120 m tall towers</strong> (labeled at bottom) to catch faster, more consistent winds at altitude.</p>
+
+      <div class="read-flow">
+        ▶ ENERGY CHAIN: Wind (Kinetic) → Blades (Mechanical rotation) → Generator (Electrical) → Transformer (High voltage) → Grid (Homes 🏠)
+      </div>
     </div>
-  </div>
-  <div class="concept-bar">
-    <span class="chip">front==rear → reset</span>
-    <span class="chip">front=(front+1)%MAX</span>
-    <span class="chip">pre-filled circular</span>
-    <span class="chip">-1,-1 sentinel reset</span>
-  </div>
-  <div class="toggle-row" onclick="toggleCode(this)">
-    <span class="toggle-label">view source code</span>
-    <span class="toggle-arrow">▼</span>
-  </div>
-  <div class="code-wrap">
-<pre><code class="language-c">#include &lt;stdio.h&gt;
-#define MAX 6
 
-int queue[MAX] = {100, 200, 300, 400, 500};
-int front = 0, rear = 4;
-
-int dequeue()
-{
-    if (front == -1 && rear == -1) { printf("Queue is EMPTY\n"); return -1; }
-    if (front == rear)
-    {
-        int val = queue[front];
-        front = rear = -1;
-        return val;
-    }
-    int val = queue[front];
-    front = (front + 1) % MAX;
-    return val;
-}
-
-void display()
-{
-    if (front == -1 && rear == -1) { printf("Queue is EMPTY\n"); return; }
-    int i = front;
-    printf("Queue elements:\n");
-    while (1)
-    {
-        printf("%d\n", queue[i]);
-        if (i == rear) break;
-        i = (i + 1) % MAX;
-    }
-}
-
-int main()
-{
-    int choice, val;
-    do {
-        printf("\n1. Dequeue\n2. Display\n3. Exit\nEnter choice: ");
-        if (scanf("%d", &choice) != 1) return 0;
-        switch (choice)
-        {
-            case 1: val = dequeue(); if (val != -1) printf("Dequeued element = %d\n", val); break;
-            case 2: display(); break;
-            case 3: printf("Exiting...\n"); break;
-            default: printf("Invalid choice\n");
-        }
-    } while (choice != 3);
-    return 0;
-}</code></pre>
+    <p class="sec-label">Advantages</p>
+    <ul class="bullet-list">
+      <li>100% renewable — inexhaustible energy source driven by solar heating of atmosphere.</li>
+      <li>Zero greenhouse gas emissions during operation (small lifecycle emissions only).</li>
+      <li>Low operating cost; no fuel needed once installed.</li>
+      <li>Land between turbines can be used for agriculture simultaneously.</li>
+      <li>Offshore wind offers higher, more consistent wind speeds.</li>
+    </ul>
+    <p class="sec-label">Limitations</p>
+    <ul class="bullet-list">
+      <li>Intermittent — power generated only when wind blows (cut-in speed > 3.5 m/s).</li>
+      <li>High initial capital cost for turbines, towers, foundations, and grid connection.</li>
+      <li>Noise pollution (~45 dB at 300m) and visual impact.</li>
+      <li>Bird and bat mortality from rotating blades.</li>
+      <li>Requires energy storage (batteries) for consistent supply.</li>
+    </ul>
+    <p class="sec-label">Environmental Impacts</p>
+    <ul class="bullet-list">
+      <li>Minimal carbon footprint vs fossil fuels (lifecycle ~7–15 g CO₂/kWh vs 820 for coal).</li>
+      <li>Shadow flicker effect near residential areas.</li>
+      <li>Possible interference with radar and communication signals.</li>
+    </ul>
+    <div class="key-box">INDIA: ~45 GW installed wind capacity (2024). Tamil Nadu, Gujarat, Rajasthan lead. Target: 140 GW by 2030.</div>
   </div>
 </div>
 
-</main>
+<!-- ════════════════════════════════════ Q10 BIOMASS ENERGY -->
+<div class="q-card c2" id="q10">
+  <div class="q-header">
+    <div class="q-num">10</div>
+    <div class="q-title">Biomass Energy</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text"><span class="highlight">Biomass energy</span> is stored solar energy in organic materials — plants, agricultural waste, animal dung, and municipal solid waste. Released via combustion, fermentation, or pyrolysis. Considered carbon-neutral since CO₂ released was recently absorbed during plant growth.</p>
 
-<footer>crafted for lab · C Data Structures · 2025 &nbsp;·&nbsp; open in any browser</footer>
+    <p class="sec-label">Sources & Conversion Pathways</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 200" width="720" height="200" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <rect x="10"  y="10" width="90" height="55" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="1.5"/>
+          <text x="55"  y="37"  text-anchor="middle" fill="#39ff7a" font-size="20">🌾</text>
+          <text x="55"  y="57"  text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">Agri-waste</text>
+        </g>
+        <g>
+          <rect x="115" y="10" width="90" height="55" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="1.5"/>
+          <text x="160" y="37"  text-anchor="middle" fill="#39ff7a" font-size="20">🌲</text>
+          <text x="160" y="57"  text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">Wood/Logs</text>
+        </g>
+        <g>
+          <rect x="220" y="10" width="90" height="55" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="1.5"/>
+          <text x="265" y="37"  text-anchor="middle" fill="#39ff7a" font-size="20">🐄</text>
+          <text x="265" y="57"  text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">Animal Dung</text>
+        </g>
+        <g>
+          <rect x="325" y="10" width="90" height="55" rx="8" fill="#062d15" stroke="#39ff7a" stroke-width="1.5"/>
+          <text x="370" y="37"  text-anchor="middle" fill="#39ff7a" font-size="20">🗑️</text>
+          <text x="370" y="57"  text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">MSW/Sludge</text>
+        </g>
 
-<!-- PRISM -->
-<script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-c.min.js"></script>
+        <line x1="55"  y1="65" x2="55"  y2="90" stroke="#39ff7a" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="160" y1="65" x2="160" y2="90" stroke="#39ff7a" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="265" y1="65" x2="265" y2="90" stroke="#39ff7a" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="370" y1="65" x2="370" y2="90" stroke="#39ff7a" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+        <rect x="10"  y="90" width="190" height="50" rx="8" fill="#1a3a00" stroke="#39ff7a" stroke-width="1.5"/>
+        <text x="105" y="111" text-anchor="middle" fill="#39ff7a" font-size="10" font-family="Space Mono" font-weight="700">PYROLYSIS (no O₂)</text>
+        <text x="105" y="128" text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">300–700°C thermal decomposition</text>
+
+        <rect x="215" y="90" width="180" height="50" rx="8" fill="#1a2a00" stroke="#ffd60a" stroke-width="1.5"/>
+        <text x="305" y="111" text-anchor="middle" fill="#ffd60a" font-size="10" font-family="Space Mono" font-weight="700">FERMENTATION</text>
+        <text x="305" y="128" text-anchor="middle" fill="#e8d580" font-size="9" font-family="Space Mono">Bacteria → Biogas/Ethanol</text>
+
+        <rect x="10"  y="158" width="80" height="36" rx="6" fill="#222" stroke="#888" stroke-width="1"/>
+        <text x="50"  y="173" text-anchor="middle" fill="#bbb" font-size="9" font-family="Space Mono">BIOCHAR</text>
+        <text x="50"  y="188" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">soil enhancer</text>
+        <line x1="50" y1="140" x2="50" y2="158" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+        <rect x="100" y="158" width="80" height="36" rx="6" fill="#2a1500" stroke="#e67e22" stroke-width="1"/>
+        <text x="140" y="173" text-anchor="middle" fill="#e67e22" font-size="9" font-family="Space Mono">BIO-OIL</text>
+        <text x="140" y="188" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">liquid fuel</text>
+        <line x1="140" y1="140" x2="140" y2="158" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+        <rect x="190" y="158" width="80" height="36" rx="6" fill="#0a1a2a" stroke="#00e5ff" stroke-width="1"/>
+        <text x="230" y="173" text-anchor="middle" fill="#00e5ff" font-size="9" font-family="Space Mono">SYNGAS</text>
+        <text x="230" y="188" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">CO + H₂</text>
+        <line x1="105" y1="140" x2="230" y2="158" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+        <rect x="280" y="158" width="100" height="36" rx="6" fill="#1a0a2a" stroke="#bf5af2" stroke-width="1.5"/>
+        <text x="330" y="173" text-anchor="middle" fill="#bf5af2" font-size="9" font-family="Space Mono">BIOGAS</text>
+        <text x="330" y="188" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">~60% CH₄</text>
+        <line x1="305" y1="140" x2="330" y2="158" stroke="#bf5af2" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+        <rect x="440" y="90" width="260" height="100" rx="8" fill="#0a1a2e" stroke="#00e5ff" stroke-width="1.5"/>
+        <text x="570" y="115" text-anchor="middle" fill="#00e5ff" font-size="10" font-family="Space Mono" font-weight="700">H₂ GENERATION</text>
+        <text x="570" y="132" text-anchor="middle" fill="#7ecef4" font-size="9" font-family="Space Mono">Steam Reforming:</text>
+        <text x="570" y="146" text-anchor="middle" fill="#ffd60a" font-size="9" font-family="Space Mono">CH₄ + H₂O → CO + 3H₂</text>
+        <text x="570" y="162" text-anchor="middle" fill="#7ecef4" font-size="9" font-family="Space Mono">Gasification: Biomass + H₂O → H₂+CO</text>
+        <text x="570" y="178" text-anchor="middle" fill="#aef5c5" font-size="8" font-family="Space Mono">→ Clean hydrogen fuel for fuel cells</text>
+      </svg>
+      <p class="diag-caption">FIG 10.1 — BIOMASS ENERGY SOURCES AND CONVERSION PATHWAYS</p>
+    </div>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This is a <strong>3-row flowchart</strong> mapping biomass from raw source → processing method → final fuel product. Read it <em>top to bottom</em> like a recipe.</p>
+
+      <h4>Row 1 — Raw Biomass Sources (Top, Green Boxes)</h4>
+      <p>Four types of biomass shown via emojis: 🌾 <strong>Agri-waste</strong> (rice husk, straw), 🌲 <strong>Wood/logs</strong> (forestry), 🐄 <strong>Animal dung</strong> (cattle, poultry), 🗑️ <strong>MSW/Sludge</strong> (municipal solid waste). All are organic carbon sources.</p>
+
+      <h4>Row 2 — Two Processing Methods (Middle)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#39ff7a"><span class="dot" style="background:#39ff7a"></span><span><strong>Green Box (Pyrolysis):</strong> Heat at 300–700°C WITHOUT oxygen (key!)</span></div>
+        <div class="legend-item" style="border-color:#ffd60a"><span class="dot" style="background:#ffd60a"></span><span><strong>Yellow Box (Fermentation):</strong> Bacteria break it down anaerobically</span></div>
+      </div>
+
+      <h4>Row 3 — Final Fuel Products (Bottom, 4 small boxes)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#888"><span class="dot" style="background:#888"></span><span><strong>Biochar (grey):</strong> Solid carbon → improves soil</span></div>
+        <div class="legend-item" style="border-color:#e67e22"><span class="dot" style="background:#e67e22"></span><span><strong>Bio-oil (orange):</strong> Liquid fuel</span></div>
+        <div class="legend-item" style="border-color:#00e5ff"><span class="dot" style="background:#00e5ff"></span><span><strong>Syngas (cyan):</strong> CO + H₂ gas mixture</span></div>
+        <div class="legend-item" style="border-color:#bf5af2"><span class="dot" style="background:#bf5af2"></span><span><strong>Biogas (purple):</strong> ~60% methane — cooking gas</span></div>
+      </div>
+
+      <h4>Right Panel — H₂ Generation Bonus</h4>
+      <p>The big cyan box on the right shows how biomass can also be used to make <strong>hydrogen fuel</strong> via steam reforming. This connects biomass to clean fuel cell technology (Q4).</p>
+
+      <div class="read-flow">
+        ▶ FLOW: Raw biomass (top) → Process [Pyrolysis OR Fermentation] → Get fuel (bottom) → Optionally make H₂ (right)
+      </div>
+    </div>
+
+    <p class="sec-label">Advantages</p>
+    <ul class="bullet-list">
+      <li>Renewable and widely available, especially in rural/agricultural regions.</li>
+      <li>Waste utilization — converts agricultural, municipal, and industrial waste to energy.</li>
+      <li>Carbon-neutral in principle — CO₂ released = CO₂ absorbed during plant growth cycle.</li>
+      <li>Biogas can be used for cooking, electricity generation, and vehicular fuel (CNG alternative).</li>
+    </ul>
+    <p class="sec-label">Limitations</p>
+    <ul class="bullet-list">
+      <li>Lower energy density compared to fossil fuels.</li>
+      <li>Direct burning produces air pollutants (CO, PM₂.₅, NOₓ).</li>
+      <li>Large land area needed for energy crops — competes with food production.</li>
+      <li>Seasonal availability and high storage/transport costs.</li>
+    </ul>
+    <div class="key-box">PYROLYSIS = Thermal decomposition in ABSENCE of oxygen at 300–700°C → Biochar + Bio-oil + Syngas. Distinguished from combustion (with O₂) and gasification (partial O₂).</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ Q12 THERMAL STRATIFICATION -->
+<div class="q-card c1" id="q12">
+  <div class="q-header">
+    <div class="q-num">12</div>
+    <div class="q-title">Thermal Stratification of Lakes</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text"><span class="highlight">Thermal stratification</span> is the formation of distinct temperature layers in a lake due to differential heating by sunlight. Warm, less dense water sits on top; cold, denser water remains at the bottom. These layers resist mixing, with significant ecological consequences.</p>
+
+    <p class="sec-label">Animated Diagram — Three Layers</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 250" width="720" height="250" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="50" r="35" fill="#ffd60a">
+          <animate attributeName="r" values="35;39;35" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <text x="60" y="54" text-anchor="middle" fill="#0c1420" font-size="13" font-family="Space Mono" font-weight="700">SUN</text>
+        <line x1="95"  y1="50" x2="115" y2="50" stroke="#ffd60a" stroke-width="2" opacity="0.6"/>
+        <line x1="86"  y1="76" x2="102" y2="88" stroke="#ffd60a" stroke-width="2" opacity="0.6"/>
+        <line x1="60"  y1="85" x2="60"  y2="100" stroke="#ffd60a" stroke-width="2" opacity="0.6"/>
+
+        <rect x="140" y="30"  width="420" height="70"  rx="10 10 0 0" fill="#1e6f9f"/>
+        <text x="350" y="58"  text-anchor="middle" fill="#aed6f1" font-size="14" font-family="Syne,sans-serif" font-weight="700">EPILIMNION</text>
+        <text x="350" y="76"  text-anchor="middle" fill="#d6eaf8" font-size="10" font-family="Space Mono">Warm (~20–25°C) | O₂-rich | Photosynthesis active</text>
+        <circle cx="180" cy="50" r="4" fill="#39ff7a" opacity="0.7" class="anim-float"/>
+        <circle cx="230" cy="62" r="3" fill="#39ff7a" opacity="0.7" class="anim-float" style="animation-delay:0.5s"/>
+        <circle cx="450" cy="48" r="4" fill="#39ff7a" opacity="0.7" class="anim-float" style="animation-delay:1s"/>
+        <circle cx="510" cy="60" r="3" fill="#39ff7a" opacity="0.7" class="anim-float" style="animation-delay:1.5s"/>
+        <line x1="200" y1="30" x2="200" y2="60" stroke="rgba(255,214,10,0.3)" stroke-width="3" stroke-dasharray="5 4" class="anim-flow"/>
+        <line x1="350" y1="30" x2="350" y2="60" stroke="rgba(255,214,10,0.3)" stroke-width="3" stroke-dasharray="5 4" class="anim-flow"/>
+        <line x1="500" y1="30" x2="500" y2="60" stroke="rgba(255,214,10,0.3)" stroke-width="3" stroke-dasharray="5 4" class="anim-flow"/>
+
+        <rect x="140" y="100" width="420" height="55" fill="#1558a0"/>
+        <text x="350" y="123" text-anchor="middle" fill="#7ecef4" font-size="14" font-family="Syne,sans-serif" font-weight="700">THERMOCLINE</text>
+        <text x="350" y="142" text-anchor="middle" fill="#aed6f1" font-size="10" font-family="Space Mono">Rapid temp drop (>1°C/m) | Acts as barrier | No mixing</text>
+
+        <rect x="140" y="155" width="420" height="85" rx="0 0 10 10" fill="#0d3b6e"/>
+        <text x="350" y="188" text-anchor="middle" fill="#5dade2" font-size="14" font-family="Syne,sans-serif" font-weight="700">HYPOLIMNION</text>
+        <text x="350" y="207" text-anchor="middle" fill="#7ecef4" font-size="10" font-family="Space Mono">Cold (~4–8°C) | O₂ depleted | Anaerobic decomposition</text>
+        <circle cx="260" cy="220" r="4" fill="rgba(139,90,0,0.7)">
+          <animate attributeName="cy" values="185;235;185" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.7;0.3;0.7" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="400" cy="210" r="3" fill="rgba(139,90,0,0.6)">
+          <animate attributeName="cy" values="175;235;175" dur="4s" repeatCount="indefinite" begin="1s"/>
+          <animate attributeName="opacity" values="0.6;0.2;0.6" dur="4s" repeatCount="indefinite" begin="1s"/>
+        </circle>
+        <text x="350" y="232" text-anchor="middle" fill="#1e5f99" font-size="9" font-family="Space Mono">Organic decomposition, H₂S, CH₄, phosphates released</text>
+
+        <text x="575" y="40"  fill="#ffd60a" font-size="10" font-family="Space Mono">TEMP →</text>
+        <line x1="580" y1="45" x2="580" y2="235" stroke="#555" stroke-width="1"/>
+        <polyline points="620,50 615,70 600,100 582,120 584,160 588,200 590,235" fill="none" stroke="#ff6b35" stroke-width="2.5"/>
+        <text x="605" y="60"  fill="#ffd60a" font-size="9" font-family="Space Mono">25°C</text>
+        <text x="593" y="115" fill="#ff6b35" font-size="9" font-family="Space Mono">↓ drop</text>
+        <text x="600" y="230" fill="#00e5ff" font-size="9" font-family="Space Mono">4°C</text>
+
+        <line x1="140" y1="100" x2="560" y2="100" stroke="#ffd60a" stroke-width="1.5" stroke-dasharray="8 5"/>
+        <line x1="140" y1="155" x2="560" y2="155" stroke="#ffd60a" stroke-width="1.5" stroke-dasharray="8 5"/>
+        <text x="635" y="103" fill="#ffd60a" font-size="8" font-family="Space Mono">no mixing</text>
+        <text x="635" y="158" fill="#ffd60a" font-size="8" font-family="Space Mono">no mixing</text>
+      </svg>
+      <p class="diag-caption">FIG 12.1 — THERMAL STRATIFICATION OF A LAKE IN SUMMER</p>
+    </div>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This is a <strong>vertical cross-section of a lake in summer</strong> — like cutting the lake in half and looking inside. It reveals that lakes are NOT uniformly mixed; they form distinct horizontal layers like a layered cake.</p>
+
+      <h4>The 3 Layers (Top → Bottom)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#1e6f9f"><span class="dot" style="background:#1e6f9f"></span><span><strong>① EPILIMNION (lightest blue):</strong> Warm top layer, ~20–25°C, sunny</span></div>
+        <div class="legend-item" style="border-color:#1558a0"><span class="dot" style="background:#1558a0"></span><span><strong>② THERMOCLINE (medium blue):</strong> Transition zone — temperature drops fast</span></div>
+        <div class="legend-item" style="border-color:#0d3b6e"><span class="dot" style="background:#0d3b6e"></span><span><strong>③ HYPOLIMNION (darkest blue):</strong> Cold bottom, ~4–8°C, dark</span></div>
+      </div>
+
+      <h4>Visual Clues to Notice</h4>
+      <p>🟢 <strong>Green dots floating in top layer:</strong> Algae thriving in sunlight (photosynthesis active)<br>
+      ☀️ <strong>Yellow rays piercing top:</strong> Sunlight only reaches epilimnion<br>
+      🟤 <strong>Brown dots sinking at bottom:</strong> Dead organic matter decomposing anaerobically<br>
+      📏 <strong>Yellow dashed "no mixing" lines:</strong> Show that thermocline acts as an invisible barrier<br>
+      📈 <strong>Orange temperature curve (right side):</strong> Shows the sudden temperature drop at the thermocline</p>
+
+      <h4>Why Don't They Mix?</h4>
+      <p>Warm water is <strong>less dense</strong> and "floats" on cold water. The middle layer (thermocline) where temperature changes rapidly acts as a <em>density barrier</em>. This prevents oxygen-rich surface water from reaching the bottom, which is why fish die in deep zones (anoxia).</p>
+
+      <div class="read-flow">
+        ▶ LAYERS: Warm + O₂-rich top (life thrives) | Thermocline barrier (no mixing) | Cold + O₂-poor bottom (dead zone, releases H₂S/CH₄)
+      </div>
+    </div>
+
+    <p class="sec-label">Effects</p>
+    <ul class="bullet-list">
+      <li>Prevents vertical mixing → oxygen-rich surface water cannot reach the hypolimnion.</li>
+      <li>Anoxic bottom → release of H₂S, CH₄, phosphates from sediments → eutrophication.</li>
+      <li>Fish kills in the hypolimnion due to oxygen depletion (hypoxia/anoxia).</li>
+      <li>Algal blooms (especially cyanobacteria) in epilimnion due to nutrient release from below.</li>
+      <li><span class="highlight">Seasonal Turnover:</span> In autumn/winter, surface cools to 4°C (max density), sinks, and mixes entire lake — restoring oxygen throughout.</li>
+    </ul>
+    <div class="key-box">DENSITY OF WATER is maximum at 4°C. This is why lakes don't freeze solid from the bottom — ice (less dense) floats, and the deep water stays at ~4°C year-round.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ Q13 HYDROELECTRIC PLANT -->
+<div class="q-card c5" id="q13">
+  <div class="q-header">
+    <div class="q-num">13</div>
+    <div class="q-title">Hydroelectric Power Plant</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text"><span class="highlight">Hydroelectric power</span> converts the <em>potential energy of stored water</em> at height into electrical energy. Energy conversion chain: Potential Energy → Kinetic Energy (falling water) → Mechanical Energy (turbine) → Electrical Energy (generator).</p>
+    <p class="body-text">Power formula: <span class="highlight">P = ρ × g × Q × H × η</span> &nbsp;|&nbsp; ρ=density, g=9.8, Q=flow rate (m³/s), H=head (m), η=efficiency (~0.85–0.95)</p>
+
+    <p class="sec-label">Schematic Diagram — Animated</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 220" width="720" height="220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5"   y="20"  width="175" height="155" rx="6" fill="#0d3b6e" stroke="#1e8bc3" stroke-width="1.5"/>
+        <text x="92"  y="85"  text-anchor="middle" fill="#7ecef4" font-size="13" font-family="Syne,sans-serif" font-weight="700">RESERVOIR</text>
+        <text x="92"  y="105" text-anchor="middle" fill="#5dade2" font-size="10" font-family="Space Mono">(Dam)</text>
+        <text x="92"  y="125" text-anchor="middle" fill="#5dade2" font-size="9" font-family="Space Mono">Potential Energy stored</text>
+        <ellipse cx="92" cy="55" rx="60" ry="8" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="1.5">
+          <animate attributeName="rx" values="60;75;60" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+        </ellipse>
+
+        <rect x="180" y="0" width="25" height="200" rx="3" fill="#3d566e" stroke="#7f8c8d" stroke-width="1.5"/>
+        <text x="192" y="215" text-anchor="middle" fill="#888" font-size="9" font-family="Space Mono">DAM</text>
+
+        <rect x="192" y="60" width="18" height="120" rx="0" fill="#2c3e50" stroke="#555" stroke-width="1"/>
+        <text x="250" y="130" fill="#888" font-size="10" font-family="Space Mono">PENSTOCK</text>
+        <text x="250" y="144" fill="#7ecef4" font-size="9"  font-family="Space Mono">(pressurized pipe)</text>
+        <circle cx="201" cy="80" r="5" fill="#1e8bc3" opacity="0.8">
+          <animate attributeName="cy" values="80;160;80" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="201" cy="120" r="5" fill="#1e8bc3" opacity="0.8">
+          <animate attributeName="cy" values="120;180;80;120" dur="1.5s" repeatCount="indefinite" begin="0.7s"/>
+        </circle>
+
+        <circle cx="270" cy="178" r="28" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+        <text x="270" y="174" text-anchor="middle" fill="#fff" font-size="10" font-family="Syne,sans-serif" font-weight="700">TURBINE</text>
+        <text x="270" y="188" text-anchor="middle" fill="#ffe0c8" font-size="8" font-family="Space Mono">(Francis/Kaplan)</text>
+        <g style="transform-origin: 270px 178px; animation: spin-slow 1.5s linear infinite;">
+          <line x1="270" y1="152" x2="270" y2="162" stroke="#fff" stroke-width="3"/>
+          <line x1="270" y1="194" x2="270" y2="204" stroke="#fff" stroke-width="3"/>
+          <line x1="244" y1="178" x2="254" y2="178" stroke="#fff" stroke-width="3"/>
+          <line x1="286" y1="178" x2="296" y2="178" stroke="#fff" stroke-width="3"/>
+        </g>
+
+        <rect x="320" y="148" width="120" height="60" rx="10" fill="#16001a" stroke="#bf5af2" stroke-width="2"/>
+        <text x="380" y="177" text-anchor="middle" fill="#bf5af2" font-size="12" font-family="Syne,sans-serif" font-weight="700">GENERATOR</text>
+        <text x="380" y="195" text-anchor="middle" fill="#d7bde2" font-size="9"  font-family="Space Mono">AC Electricity ⚡</text>
+        <line x1="298" y1="178" x2="320" y2="178" stroke="#888" stroke-width="6" stroke-linecap="round"/>
+
+        <rect x="460" y="148" width="110" height="60" rx="10" fill="#1a0a00" stroke="#e67e22" stroke-width="2"/>
+        <text x="515" y="174" text-anchor="middle" fill="#e67e22" font-size="11" font-family="Syne,sans-serif" font-weight="700">STEP-UP</text>
+        <text x="515" y="190" text-anchor="middle" fill="#e8c0a0" font-size="10" font-family="Space Mono">TRANSFORMER</text>
+        <line x1="440" y1="178" x2="460" y2="178" stroke="#bf5af2" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+
+        <rect x="590" y="148" width="120" height="60" rx="10" fill="#062d15" stroke="#39ff7a" stroke-width="2"/>
+        <text x="650" y="174" text-anchor="middle" fill="#39ff7a" font-size="12" font-family="Syne,sans-serif" font-weight="700">POWER</text>
+        <text x="650" y="190" text-anchor="middle" fill="#aef5c5" font-size="10" font-family="Space Mono">GRID / HOMES</text>
+        <line x1="570" y1="178" x2="590" y2="178" stroke="#e67e22" stroke-width="2.5" stroke-dasharray="6 4" class="anim-flow"/>
+
+        <rect x="230" y="206" width="80" height="14" rx="4" fill="#0d3b6e" stroke="#5dade2" stroke-width="1"/>
+        <text x="270" y="216" text-anchor="middle" fill="#5dade2" font-size="8" font-family="Space Mono">TAILRACE</text>
+
+        <text x="360" y="130" text-anchor="middle" fill="#ffd60a" font-size="10" font-family="Space Mono">PE (reservoir) → KE (penstock) → Mech. (turbine) → Electrical (generator)</text>
+
+        <line x1="155" y1="20"  x2="155" y2="178" stroke="rgba(255,214,10,0.4)" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="125" y="100" fill="#ffd60a" font-size="10" font-family="Space Mono" transform="rotate(-90 125 100)">HEAD (H)</text>
+      </svg>
+      <p class="diag-caption">FIG 13.1 — HYDROELECTRIC POWER PLANT SCHEMATIC · ANIMATED</p>
+    </div>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This is a <strong>side-view schematic of a hydroelectric dam</strong>, showing how a high-altitude reservoir of water gets converted into electricity for your home. Read it like gravity pulling water down — left to right and top to bottom.</p>
+
+      <h4>The 6 Major Components (Follow the Water!)</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#1e8bc3"><span class="dot" style="background:#0d3b6e"></span><span><strong>① Reservoir (Big Blue, top-left):</strong> Stored water = Potential Energy</span></div>
+        <div class="legend-item" style="border-color:#7f8c8d"><span class="dot" style="background:#3d566e"></span><span><strong>② Dam Wall (Grey vertical bar):</strong> Holds the water back</span></div>
+        <div class="legend-item" style="border-color:#555"><span class="dot" style="background:#2c3e50"></span><span><strong>③ Penstock (Vertical pipe):</strong> Water rushes down (becomes KE)</span></div>
+        <div class="legend-item" style="border-color:#d35400"><span class="dot" style="background:#e67e22"></span><span><strong>④ Turbine (Spinning Orange Wheel):</strong> Water spins it → mechanical energy</span></div>
+        <div class="legend-item" style="border-color:#bf5af2"><span class="dot" style="background:#bf5af2"></span><span><strong>⑤ Generator (Purple Box):</strong> Mechanical → Electrical</span></div>
+        <div class="legend-item" style="border-color:#e67e22"><span class="dot" style="background:#e67e22"></span><span><strong>⑥ Transformer + Grid:</strong> Raise voltage → transmit to homes</span></div>
+      </div>
+
+      <h4>The Two Animations to Watch</h4>
+      <p>💧 <strong>Blue dots falling down the penstock pipe:</strong> This is water under high pressure rushing from reservoir to turbine. Gravity converts its potential energy to kinetic.<br>
+      ⚙️ <strong>Orange turbine wheel spinning:</strong> The falling water hits the turbine blades, making it rotate, which spins the shaft connected to the generator.<br>
+      📏 <strong>Yellow dashed "HEAD (H)" line on left:</strong> Shows the vertical distance the water falls — bigger H = more power!</p>
+
+      <div class="read-flow">
+        ▶ ENERGY CHAIN: PE (water at height) → KE (rushing through penstock) → Mechanical (spinning turbine) → Electrical (generator) → High voltage (transformer) → Homes (grid)
+      </div>
+    </div>
+
+    <p class="sec-label">Components & Functions</p>
+    <table class="rxn-table">
+      <tr><th>Component</th><th>Function</th></tr>
+      <tr><td class="rxn-eq">Dam / Reservoir</td><td class="rxn-note">Stores water at height; regulates flow; creates head (H)</td></tr>
+      <tr><td class="rxn-eq">Penstock</td><td class="rxn-note">Large pipes carry water from reservoir to turbine under high pressure</td></tr>
+      <tr><td class="rxn-eq">Turbine</td><td class="rxn-note">Converts water KE to mechanical rotation (Francis, Kaplan, Pelton types)</td></tr>
+      <tr><td class="rxn-eq">Generator</td><td class="rxn-note">Converts mechanical energy to AC electricity (electromagnetic induction)</td></tr>
+      <tr><td class="rxn-eq">Transformer</td><td class="rxn-note">Steps up voltage for long-distance transmission on grid</td></tr>
+      <tr><td class="rxn-eq">Tailrace</td><td class="rxn-note">Returns used water from turbine back to the river downstream</td></tr>
+    </table>
+
+    <p class="sec-label">Advantages</p>
+    <ul class="bullet-list">
+      <li>Zero fuel cost; renewable energy source (water cycle replenishes reservoir).</li>
+      <li>No air pollution or greenhouse gas emissions during operation.</li>
+      <li>Highly efficient — 85–95% conversion efficiency (highest among all power plants).</li>
+      <li>Multipurpose: irrigation, flood control, drinking water, navigation, recreation.</li>
+      <li>Long lifespan — dams last 50–100+ years with low maintenance.</li>
+      <li>Pumped storage hydro acts as a giant battery — stores excess energy from grid.</li>
+    </ul>
+    <div class="key-box">INDIA: Tehri Dam (1000 MW, Uttarakhand), Bhakra-Nangal (1325 MW, Punjab). WORLD: Three Gorges Dam, China (22,500 MW) — world's largest. India's hydro target: 100 GW by 2030.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ Q14 HAZARDOUS WASTE -->
+<div class="q-card c4" id="q14">
+  <div class="q-header">
+    <div class="q-num">14</div>
+    <div class="q-title">Hazardous Waste</div>
+  </div>
+  <div class="q-body">
+    <p class="body-text"><span class="highlight">Hazardous waste</span> is any solid, liquid, or gaseous waste that poses a substantial threat to public health or the environment due to its quantity, concentration, or physical, chemical, or infectious characteristics. Governed in India by <em>Hazardous Waste (Management, Handling & Transboundary Movement) Rules, 2008</em>.</p>
+
+    <p class="sec-label">4 Characteristics — IRCТ (RCRA Criteria)</p>
+    <div class="diag-wrap">
+      <svg viewBox="0 0 720 160" width="720" height="160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10"  y="15" width="160" height="130" rx="10" fill="#2a0a00" stroke="#ff6b35" stroke-width="2"/>
+        <text x="90"  y="45"  text-anchor="middle" fill="#ffd60a" font-size="28">🔥</text>
+        <text x="90"  y="70"  text-anchor="middle" fill="#ff6b35" font-size="13" font-family="Syne,sans-serif" font-weight="700">IGNITABILITY</text>
+        <text x="90"  y="88"  text-anchor="middle" fill="#e8c0a0" font-size="9" font-family="Space Mono">Flash pt &lt; 60°C</text>
+        <text x="90"  y="103" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">Solvents, gasoline</text>
+        <text x="90"  y="117" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">paint waste, oils</text>
+
+        <rect x="190" y="15" width="160" height="130" rx="10" fill="#1a1a00" stroke="#ffd60a" stroke-width="2"/>
+        <text x="270" y="45"  text-anchor="middle" fill="#ffd60a" font-size="28">⚗️</text>
+        <text x="270" y="70"  text-anchor="middle" fill="#ffd60a" font-size="13" font-family="Syne,sans-serif" font-weight="700">REACTIVITY</text>
+        <text x="270" y="88"  text-anchor="middle" fill="#e8d580" font-size="9" font-family="Space Mono">Unstable, explosive</text>
+        <text x="270" y="103" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">Reacts with water/air</text>
+        <text x="270" y="117" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">Peroxides, cyanide</text>
+
+        <rect x="370" y="15" width="160" height="130" rx="10" fill="#1a0a2a" stroke="#bf5af2" stroke-width="2"/>
+        <text x="450" y="45"  text-anchor="middle" fill="#bf5af2" font-size="28">🧪</text>
+        <text x="450" y="70"  text-anchor="middle" fill="#bf5af2" font-size="13" font-family="Syne,sans-serif" font-weight="700">CORROSIVITY</text>
+        <text x="450" y="88"  text-anchor="middle" fill="#d7bde2" font-size="9" font-family="Space Mono">pH &lt;2 or &gt;12.5</text>
+        <text x="450" y="103" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">Battery acid, caustic</text>
+        <text x="450" y="117" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">soda, lye solutions</text>
+
+        <rect x="550" y="15" width="160" height="130" rx="10" fill="#0a2a1a" stroke="#39ff7a" stroke-width="2"/>
+        <text x="630" y="45"  text-anchor="middle" fill="#39ff7a" font-size="28">☠️</text>
+        <text x="630" y="70"  text-anchor="middle" fill="#39ff7a" font-size="13" font-family="Syne,sans-serif" font-weight="700">TOXICITY</text>
+        <text x="630" y="88"  text-anchor="middle" fill="#aef5c5" font-size="9" font-family="Space Mono">TCLP test positive</text>
+        <text x="630" y="103" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">Lead, mercury, arsenic</text>
+        <text x="630" y="117" text-anchor="middle" fill="#888" font-size="8" font-family="Space Mono">cadmium compounds</text>
+      </svg>
+      <p class="diag-caption">FIG 14.1 — FOUR CHARACTERISTICS OF HAZARDOUS WASTE (IRCТ)</p>
+    </div>
+
+    <!-- ★ NEW: DIAGRAM EXPLANATION ★ -->
+    <div class="diag-explain">
+      <h4>What This Diagram Shows</h4>
+      <p>This is a <strong>four-card classification chart</strong> showing the 4 official criteria used by the US EPA (RCRA) and India's Hazardous Waste Rules to identify whether a waste is "hazardous". Each card has an icon, title, test, and examples — making memorization easy.</p>
+
+      <h4>The 4 Cards Explained (Left → Right) — Memorize as "IRCТ"</h4>
+      <div class="legend">
+        <div class="legend-item" style="border-color:#ff6b35"><span class="dot" style="background:#ff6b35"></span><span><strong>🔥 IGNITABILITY (Orange):</strong> Catches fire easily — flash point &lt; 60°C</span></div>
+        <div class="legend-item" style="border-color:#ffd60a"><span class="dot" style="background:#ffd60a"></span><span><strong>⚗️ REACTIVITY (Yellow):</strong> Unstable, may explode or react violently</span></div>
+        <div class="legend-item" style="border-color:#bf5af2"><span class="dot" style="background:#bf5af2"></span><span><strong>🧪 CORROSIVITY (Purple):</strong> Extreme pH (&lt;2 or &gt;12.5) — eats metal/skin</span></div>
+        <div class="legend-item" style="border-color:#39ff7a"><span class="dot" style="background:#39ff7a"></span><span><strong>☠️ TOXICITY (Green):</strong> Poisons living organisms (heavy metals)</span></div>
+      </div>
+
+      <h4>Why Use Color-Coding?</h4>
+      <p>Each color is paired with intuitive icons matching the danger type:</p>
+      <p>🔥 <strong>Orange fire</strong> for ignitability • ⚗️ <strong>Yellow flask</strong> for unstable chemicals • 🧪 <strong>Purple test tube</strong> for corrosive acid/base • ☠️ <strong>Green skull</strong> (universal "danger") for toxicity. Each card lists examples (gasoline, peroxides, battery acid, mercury) to help relate the theory to real-world items.</p>
+
+      <div class="read-flow">
+        ▶ MNEMONIC "IRCТ": If a waste shows ANY ONE of these 4 properties, it's classified as hazardous and must be handled under strict regulations (Basel Convention 1989).
+      </div>
+    </div>
+
+    <p class="sec-label">Sources of Hazardous Waste</p>
+    <ul class="bullet-list">
+      <li><span class="highlight">Industrial:</span> Chemical plants, electroplating, leather tanning, paint/pesticide manufacturing — solvents, heavy metals, acids, dyes.</li>
+      <li><span class="highlight">Healthcare/Medical:</span> Hospitals — sharps (needles), pathological, pharmaceutical, and radioactive medical waste.</li>
+      <li><span class="highlight">Agricultural:</span> Pesticide containers, obsolete/banned pesticides, excess fertilizers.</li>
+      <li><span class="highlight">Mining:</span> Acid mine drainage, tailings containing arsenic, lead, cyanide — serious soil and water contamination.</li>
+      <li><span class="highlight">E-waste:</span> Discarded electronics (computers, phones) — contain lead, cadmium, mercury, brominated flame retardants.</li>
+      <li><span class="highlight">Nuclear/Radioactive:</span> Nuclear power plants and research reactors — requires deep geological disposal.</li>
+    </ul>
+
+    <p class="sec-label">Management Methods</p>
+    <ul class="bullet-list">
+      <li>Source reduction and waste minimization — cleaner production technologies.</li>
+      <li>Secure landfills with impermeable HDPE liners and leachate collection systems.</li>
+      <li>High-temperature incineration (>1200°C) in rotary kilns with emission controls.</li>
+      <li>Chemical neutralization, stabilization/solidification (cement, lime-based).</li>
+      <li>Bioremediation — microorganisms degrade organic hazardous compounds in soil/groundwater.</li>
+      <li>Physical treatment — activated carbon adsorption, ion exchange, membrane filtration.</li>
+    </ul>
+    <div class="key-box">BASEL CONVENTION (1989): International treaty controlling transboundary movement of hazardous wastes. India ratified it — hazardous waste cannot be exported without prior informed consent of receiving country.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ QUICK REVISION ══════════════════════ -->
+<div class="quick-rev">
+  <p class="sec-label" style="margin-top:0">⚡ QUICK REVISION — KEY POINTS AT A GLANCE</p>
+  <div class="rev-grid">
+    <div class="rev-item"><div class="rev-topic">01 · REVERSE OSMOSIS</div><div class="rev-point">Applied pressure > osmotic pressure; removes 99% contaminants; brine reject</div></div>
+    <div class="rev-item"><div class="rev-topic">02 · OZONE DEPLETION</div><div class="rev-point">Cl• from CFC destroys O₃ in chain reaction; 1 Cl• = 100,000 O₃; Montreal Protocol 1987</div></div>
+    <div class="rev-item"><div class="rev-topic">03 · PHOTOCHEMICAL SMOG</div><div class="rev-point">NOₓ + VOC + UV → O₃ + PAN; brown haze; Los Angeles type; sunny + warm + traffic</div></div>
+    <div class="rev-item"><div class="rev-topic">04 · HYDROGEN FUEL CELL</div><div class="rev-point">2H₂ + O₂ → 2H₂O + electricity; only byproduct = water; PEM type most common</div></div>
+    <div class="rev-item"><div class="rev-topic">06 · ACTIVATED SLUDGE</div><div class="rev-point">Aerobic bacteria degrade BOD 85–95%; sludge recycled (RAS); DO > 2 mg/L</div></div>
+    <div class="rev-item"><div class="rev-topic">07 · WASTE HIERARCHY</div><div class="rev-point">Prevention → Reuse → Recycle → Recovery → Disposal (best to worst)</div></div>
+    <div class="rev-item"><div class="rev-topic">08 · CATALYTIC CONVERTER</div><div class="rev-point">Rh (reduces NOₓ), Pt/Pd (oxidize CO, HC); >90% efficiency; light-off 250–300°C</div></div>
+    <div class="rev-item"><div class="rev-topic">09 · WIND ENERGY</div><div class="rev-point">P ∝ v³; intermittent supply; zero GHG; cut-in speed 3.5 m/s; India target 140 GW</div></div>
+    <div class="rev-item"><div class="rev-topic">10 · BIOMASS / PYROLYSIS</div><div class="rev-point">Pyrolysis (no O₂, 300–700°C) → Biochar + Bio-oil + Syngas; carbon-neutral</div></div>
+    <div class="rev-item"><div class="rev-topic">11 · NRM</div><div class="rev-point">Sustainable use; Polluter Pays, Precautionary, Intergenerational Equity principles</div></div>
+    <div class="rev-item"><div class="rev-topic">12 · THERMAL STRATIFICATION</div><div class="rev-point">Epilimnion (warm) / Thermocline (no mix) / Hypolimnion (cold, anoxic); autumn turnover</div></div>
+    <div class="rev-item"><div class="rev-topic">13 · HYDROELECTRIC</div><div class="rev-point">P = ρgQH×η; efficiency 85–95%; PE → KE → Mechanical → Electrical</div></div>
+    <div class="rev-item"><div class="rev-topic">14 · HAZARDOUS WASTE</div><div class="rev-point">IRCТ: Ignitability, Reactivity, Corrosivity, Toxicity; Basel Convention 1989</div></div>
+  </div>
+</div>
+
+</div><!-- end section-wrap -->
+
+<footer>
+  <p>ENVIRONMENTAL CHEMISTRY & NCES · FE SEM-II (NEP) · 1ST YEAR ENGINEERING</p>
+  <p style="margin-top:8px; color:#444">ALL DIAGRAMS NOW INCLUDE DETAILED EXPLANATIONS · 1ST YEAR ENGINEERING NOTES</p>
+</footer>
 
 <script>
-  /* ── Toggle code visibility ── */
-  function toggleCode(row) {
-    const wrap = row.nextElementSibling;
-    const isOpen = wrap.classList.contains('open');
-    row.classList.toggle('open', !isOpen);
-    wrap.classList.toggle('open', !isOpen);
-    row.querySelector('.toggle-label').textContent = isOpen ? 'view source code' : 'hide source code';
-    if (!isOpen) Prism.highlightAllUnder(wrap);
+(function(){
+  const canvas = document.getElementById('starsCanvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  function resize(){
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
   }
-
-  /* ── Copy code ── */
-  function copyCode(btn) {
-    const card = btn.closest('.code-card');
-    const code = card.querySelector('code').innerText;
-    navigator.clipboard.writeText(code).then(() => {
-      btn.classList.add('copied');
-      btn.innerHTML = '✅ Copied!';
-      launchConfetti();
-      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '📋 Copy'; }, 2200);
-    });
-  }
-
-  /* ── Confetti ── */
-  const COLORS = ['#f0c040','#5fe0b0','#ff6b6b','#a16bff','#60bfff'];
-  function launchConfetti() {
-    for (let i = 0; i < 50; i++) {
-      const el = document.createElement('div');
-      el.className = 'confetti-piece';
-      el.style.cssText = `
-        left:${Math.random()*100}vw;
-        background:${COLORS[Math.floor(Math.random()*5)]};
-        width:${6+Math.random()*6}px;
-        height:${6+Math.random()*6}px;
-        animation-delay:${Math.random()*0.4}s;
-        animation-duration:${1+Math.random()*0.6}s;
-        border-radius:${Math.random()>0.5?'50%':'3px'};
-      `;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 2000);
+  function initStars(){
+    stars = [];
+    for(let i=0; i<160; i++){
+      stars.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        r: Math.random()*1.4+0.2,
+        a: Math.random(),
+        speed: Math.random()*0.003+0.001
+      });
     }
   }
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(s=>{
+      s.a += s.speed;
+      ctx.globalAlpha = 0.3 + 0.5*Math.abs(Math.sin(s.a));
+      ctx.fillStyle = '#b8d4e8';
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  resize();
+  initStars();
+  draw();
+  window.addEventListener('resize', ()=>{ resize(); initStars(); });
+})();
 
-  /* ── Scroll-based card reveal ── */
-  const cards = document.querySelectorAll('.code-card');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((e, i) => {
-      if (e.isIntersecting) {
-        setTimeout(() => e.target.classList.add('visible'), i * 60);
-        observer.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.08 });
-  cards.forEach(c => observer.observe(c));
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.08 });
 
-  /* ── Active nav pill on scroll ── */
-  const pills = document.querySelectorAll('.nav-pill');
-  const sectIds = ['card1','card2','card3','card4','card5','card6','card7','card8','card9'];
-  window.addEventListener('scroll', () => {
-    let cur = '';
-    sectIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.getBoundingClientRect().top < 160) cur = id;
-    });
-    pills.forEach(p => {
-      p.classList.toggle('active', p.getAttribute('href') === '#' + cur);
-    });
-  }, { passive: true });
+document.querySelectorAll('.q-card').forEach(c => observer.observe(c));
+
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', e=>{
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if(target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+});
 </script>
 </body>
 </html>
